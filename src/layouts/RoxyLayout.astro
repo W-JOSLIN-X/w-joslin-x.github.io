@@ -1,0 +1,58 @@
+---
+import { roxy } from "../config/roxy";
+import { posts, day, wordCount } from "../utils/roxy";
+import Icon from "../components/roxy/Icon.astro";
+import rawActivity from "../data/roxy-activity.json";
+const activity = rawActivity as { date:string; hash:string; message:string; url:string }[];
+import "../styles/roxy.css";
+import "katex/dist/katex.min.css";
+const { title, home=false, background=roxy.background, backgroundPosition=roxy.backgroundPosition } = Astro.props;
+const all = await posts();
+const totalWords = all.reduce((n,p) => n+wordCount(p.body || ""),0);
+const lastUpdate = all.length ? day(new Date(Math.max(...all.map(p => (p.data.updated || p.data.published).valueOf())))) : "暂无";
+const today = day(new Date());
+const days = Array.from({length:182}, (_,i) => {const date = new Date(`${today}T00:00:00+08:00`); date.setUTCDate(date.getUTCDate()-181+i); const dateKey=day(date); return {date:dateKey, count:activity.filter(c=>c.date===dateKey).length};});
+---
+<!doctype html>
+<html lang="zh-CN" data-mode="banner" data-theme="light">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="description" content={title ? `${title} · ${roxy.title}` : roxy.subtitle}/>
+  <title>{title ? `${title} · ${roxy.title}` : roxy.title}</title>
+  <link rel="icon" href={roxy.avatar}/>
+  <script is:inline>try{const s=JSON.parse(localStorage.getItem('roxy-appearance')||'{}');for(const k of ['mode','theme','soft','waves','dynamic'])if(s[k]!=null)document.documentElement.dataset[k]=s[k];if(s.color)document.documentElement.style.setProperty('--accent',s.color)}catch{}</script>
+</head>
+<body class:list={[{home}]} style={`--page-image:url('${background}');--image-focus:${backgroundPosition}`}>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="wallpaper" aria-hidden="true"></div>
+  <header class="topbar"><a class="brand" href="/"><span class="brand-mark">R<span>✦</span></span><span>Roooooxy<span class="brand-dot">.</span></span></a>
+    <nav aria-label="主导航"><a class:list={[{active:home}]} href="/"><Icon name="home"/>首页</a><a class:list={[{active:title==='关于'}]} href="/about/">关于</a><a href={roxy.repository} target="_blank" rel="noopener">GitHub <span>↗</span></a></nav>
+    <div class="tools"><button id="focus-search" aria-label="搜索文章"><Icon name="search"/></button><button id="appearance-open" aria-label="外观设置"><Icon name="palette"/></button><button id="theme-toggle" aria-label="切换深浅模式"><Icon name="moon"/></button><button class="mobile-only" data-drawer="right-sidebar" aria-label="个人资料"><img src={roxy.avatar} alt=""/></button></div>
+  </header>
+  <section class:list={["hero",{compact:!home}]} aria-label="博客横幅">
+    <div class="hero-shade"></div>
+    <div class="hero-content"><span class="eyebrow">A LITTLE CORNER OF MY WORLD</span><h1>{roxy.title}</h1><p id="hero-subtitle">{roxy.subtitle}</p><a href="#main" class="hero-link">往下翻，遇见一些记录 <span>↓</span></a></div>
+    <a class="art-credit" href="/about/#artwork">背景 · 败犬女主太多了！ ↗</a>
+    <svg class="waves" viewBox="0 0 1440 50" preserveAspectRatio="none" aria-hidden="true"><path d="M0 20Q360 65 720 25T1440 30V50H0Z"/></svg>
+  </section>
+  <div class="mobile-toolbar"><button data-drawer="left-sidebar"><Icon name="menu"/>{home?'筛选文章':'目录与标签'}</button><span>{home?'慢慢记录，慢慢生长':'一篇一篇，留下思考'}</span></div>
+  <div class="site-grid">
+    <aside id="left-sidebar" class="sidebar left"><button class="drawer-close" aria-label="关闭导航"><Icon name="close"/></button><slot name="left"/></aside>
+    <main id="main" tabindex="-1"><slot/></main>
+    <aside id="right-sidebar" class="sidebar right"><button class="drawer-close" aria-label="关闭个人资料"><Icon name="close"/></button>
+      <section class="panel profile"><div class="profile-cover"></div><img class="avatar" src={roxy.avatar} alt="Roooooxy 的头像"/><span class="profile-status"><i></i> 在这里，记录日常</span><h2>{roxy.name}</h2><p class="profile-intro">笔记 / 随笔 / 热爱</p><p class="motto">{roxy.motto}</p><a class="github-link" href={roxy.repository} target="_blank" rel="noopener"><Icon name="github"/> GitHub <span>↗</span></a></section>
+      {roxy.announcement && <section class="panel"><h3>小小公告</h3><p>{roxy.announcement}</p></section>}
+      <section class="panel stats"><h3><span class="section-mark"></span>这里的积累</h3><div class="stat-pair"><div><strong>{all.length}</strong><span>篇文章</span></div><div><strong>{totalWords.toLocaleString()}</strong><span>字的记录</span></div></div><p class="last-update">最近更新 <span>{lastUpdate}</span></p></section>
+      <section class="panel activity"><h3><span class="section-mark"></span>写作足迹 <small>近半年</small></h3><div class="heatmap" aria-label="每日内容提交活跃图">{days.map(d=><button data-day={d.date} data-count={Math.min(4,d.count)} aria-label={`${d.date}，${d.count} 次提交`} title={`${d.date} · ${d.count} 次提交`}></button>)}</div><div class="heatmap-key"><span>{activity.filter(c=>c.date>=days[0].date).length} 次内容提交</span><span>少 <i></i><i></i><i></i> 多</span></div><p class="activity-note">{activity.length?'点击日期查看修改记录':'还没有内容提交，第一笔留给你。'}</p></section>
+      <section class="panel music"><div class="music-heading"><span class="record"><Icon name="music" size={25}/></span><div><h3>{roxy.music.title}</h3><p>{roxy.music.artist}</p></div></div>{roxy.music.src ? <audio controls preload="none" src={roxy.music.src}/> : <div class="music-placeholder"><span>00:00 ━━━━━━━━━ 00:00</span><button disabled aria-label="尚未配置音频，无法播放">▶</button></div>}</section>
+      <p class="sidebar-foot">把零散的想法，留成自己的轨迹。<br/><span>KEEP A LITTLE WONDER.</span></p>
+    </aside>
+  </div>
+  <footer><span>© {new Date().getFullYear()} {roxy.name}</span><span>Built with <a href="https://astro.build/">Astro</a> & <a href="https://github.com/LyraVoid/Mizuki">Mizuki</a></span>{roxy.statistics && <span id="busuanzi_container_site_pv" style="display:none">访问 <span id="busuanzi_value_site_pv"></span> 次</span>}</footer>
+  <button class="back-top" aria-label="回到顶部" id="back-top">↑</button>
+  <dialog id="appearance"><div class="dialog-heading"><h2>让这里更像你</h2><button data-close-dialog aria-label="关闭外观设置"><Icon name="close"/></button></div><p class="muted">外观偏好只保存在当前浏览器</p><fieldset><legend>背景展示</legend><div class="segmented"><button data-mode="banner">横幅</button><button data-mode="fullscreen">全屏</button><button data-mode="none">隐藏</button></div></fieldset><fieldset><legend>主题色</legend><div class="colors">{['#3f4948','#3678ac','#56784e','#9269a5','#b35a72','#a96a35'].map(c=><button data-color={c} style={`background:${c}`} aria-label={`主题色 ${c}`}></button>)}<label class="custom-color">自选 <input id="custom-color" type="color" value="#3f4948" aria-label="自定义主题色"/></label></div></fieldset><label class="setting-row">柔化全屏背景<input type="checkbox" id="setting-soft"/></label><label class="setting-row">横幅波浪<input type="checkbox" id="setting-waves" checked/></label><label class="setting-row">标题轻微动态<input type="checkbox" id="setting-dynamic"/></label><button id="reset-appearance" class="secondary">恢复默认外观</button></dialog>
+  <dialog id="activity-dialog"><div class="dialog-heading"><h2 id="activity-title">修改记录</h2><button data-close-dialog aria-label="关闭修改记录"><Icon name="close"/></button></div><div id="activity-records"></div></dialog>
+  <script is:inline id="activity-data" type="application/json" set:html={JSON.stringify(activity).replace(/</g,'\\u003c')}/>
+  {roxy.statistics && <script is:inline>if(location.hostname==='w-joslin-x.github.io'){const s=document.createElement('script');s.src='https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';s.async=true;document.head.append(s)}</script>}
+  <script src="../scripts/roxy-client.ts"></script>
+</body></html>

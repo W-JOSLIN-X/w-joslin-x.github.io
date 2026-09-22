@@ -1,0 +1,33 @@
+---
+import RoxyLayout from '../layouts/RoxyLayout.astro';
+import Filters from '../components/roxy/Filters.astro';
+import Icon from '../components/roxy/Icon.astro';
+import { posts,day,postHref,plainText,wordCount } from '../utils/roxy';
+const all=await posts();
+const searchData=all.map(p=>({id:p.id,title:p.data.title,text:plainText(p.body||''),tags:p.data.tags,moods:p.data.moods,category:p.data.category}));
+---
+<RoxyLayout home>
+<Filters slot="left"/>
+<div class="feed-heading"><div><h2>最近的记录<span style="color:var(--muted)">.</span></h2><p>想法会散落，文字会留下。</p></div><span id="result-count" aria-live="polite">共 {all.length} 篇</span></div>
+<div class="search-box"><Icon name="search" size={16}/><input id="search-input" type="search" aria-label="搜索文章" placeholder="搜索标题，找一篇想读的文章…"/><select id="search-scope" aria-label="搜索范围"><option value="title">仅标题</option><option value="full">全文</option></select></div>
+<div id="post-feed">{all.map((p,i)=> <div class="feed-entry" data-post-id={p.id} data-month={day(p.data.published).slice(0,7)} hidden={i>=12}>
+<h2 class="month-heading" hidden={i>0&&day(all[i-1].data.published).slice(0,7)===day(p.data.published).slice(0,7)}>{day(p.data.published).slice(0,4)} 年 {Number(day(p.data.published).slice(5,7))} 月</h2>
+<article class="post-card"><div class="card-top"><span class="type-badge">{p.data.category||'文章'}</span><time datetime={day(p.data.published)}>{day(p.data.published).replaceAll('-','.')}</time>{p.data.tags.includes('演示')&&<span class="demo-badge">示例内容</span>}</div><h3><a href={postHref(p.id)}>{p.data.title}</a></h3><p class="card-summary">{p.data.description||plainText(p.body||'').slice(0,100)}</p>{p.data.image&&<img class="card-cover" src={p.data.image} alt={p.data.title+'封面'} loading="lazy"/>}<div class="card-bottom"><div class="card-tags">{p.data.tags.map(t=><span>#{t}</span>)}{p.data.moods.map(m=><span>{m}</span>)}</div><div class="card-meta"><span>{wordCount(p.body||'')} 字</span><Icon name="clock" size={11}/><span>{Math.max(1,Math.ceil(wordCount(p.body||'')/350))} 分钟</span><Icon name="arrow" size={13}/></div></div>{p.data.updated&&<p class="card-updated">更新于 {day(p.data.updated)}</p>}</article></div>)}</div>
+<section class="empty-state" id="no-results" hidden><h3>还没找到这篇记录</h3><p>试试更短的关键词，或减少几个筛选条件。</p><button data-reset-filter class="secondary">清空筛选</button></section>
+<button class="load-more" id="load-more" hidden={all.length<=12}>再翻 12 篇 ↓</button><p class="feed-end" id="feed-end" hidden={all.length>12}>— 暂时写到这里，下次再见 —</p>
+<script is:inline type="application/json" id="search-data" set:html={JSON.stringify(searchData).replace(/</g,'\\u003c')}/>
+<script>
+import { matchesPost } from '../utils/roxy-filter.mjs';
+const data=JSON.parse(document.querySelector('#search-data')!.textContent!);
+const input=document.querySelector<HTMLInputElement>('#search-input')!;
+const scope=document.querySelector<HTMLSelectElement>('#search-scope')!;
+let category='',tags=new Set<string>(),moods=new Set<string>(),limit=12;
+const url=new URL(location.href);input.value=url.searchParams.get('q')||'';scope.value=url.searchParams.get('scope')==='full'?'full':'title';url.searchParams.getAll('tag').forEach(t=>tags.add(t));url.searchParams.getAll('mood').forEach(m=>moods.add(m));category=url.searchParams.get('type')||'';
+function update(){const matched=new Set(data.filter((p:any)=>matchesPost(p,{q:input.value,scope:scope.value,category,tags:[...tags],moods:[...moods]})).map((p:any)=>p.id));let visible=0,lastMonth='';document.querySelectorAll<HTMLElement>('.feed-entry').forEach(el=>{const show=matched.has(el.dataset.postId)&&visible<limit;el.hidden=!show;if(show){visible++;const month=el.dataset.month!;el.querySelector<HTMLElement>('.month-heading')!.hidden=lastMonth===month;lastMonth=month}});document.querySelector('#result-count')!.textContent=`找到 ${matched.size} 篇`;document.querySelector<HTMLElement>('#load-more')!.hidden=matched.size<=limit;document.querySelector<HTMLElement>('#feed-end')!.hidden=matched.size>limit||matched.size===0;document.querySelector<HTMLElement>('#no-results')!.hidden=matched.size>0;document.querySelectorAll<HTMLButtonElement>('[data-category],[data-filter-tag],[data-filter-mood]').forEach(b=>{const active=b.dataset.category!==undefined?b.dataset.category===category:b.dataset.filterTag!==undefined?tags.has(b.dataset.filterTag):moods.has(b.dataset.filterMood!);b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});const params=new URLSearchParams();if(input.value)params.set('q',input.value);if(scope.value==='full')params.set('scope','full');if(category)params.set('type',category);tags.forEach(t=>params.append('tag',t));moods.forEach(m=>params.append('mood',m));history.replaceState(null,'',`${location.pathname}${params.size?'?'+params:''}${location.hash}`)}
+input.addEventListener('input',()=>{limit=12;update()});scope.addEventListener('change',()=>{limit=12;update()});
+document.querySelectorAll<HTMLButtonElement>('[data-category]').forEach(b=>b.onclick=()=>{category=b.dataset.category!;limit=12;update()});
+for(const [attr,set] of [['filterTag',tags],['filterMood',moods]] as const)document.querySelectorAll<HTMLButtonElement>(attr==='filterTag'?'[data-filter-tag]':'[data-filter-mood]').forEach(b=>b.onclick=()=>{const value=b.dataset[attr]!;set.has(value)?set.delete(value):set.add(value);limit=12;update()});
+document.querySelectorAll<HTMLButtonElement>('[data-reset-filter]').forEach(b=>b.onclick=()=>{input.value='';category='';tags.clear();moods.clear();limit=12;update()});
+document.querySelector<HTMLButtonElement>('#load-more')!.onclick=()=>{limit+=12;update()};update();if(url.searchParams.has('search'))input.focus();
+</script>
+</RoxyLayout>
