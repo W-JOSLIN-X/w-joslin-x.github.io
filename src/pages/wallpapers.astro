@@ -1,0 +1,22 @@
+---
+import RoxyLayout from '../layouts/RoxyLayout.astro';
+import Filters from '../components/roxy/Filters.astro';
+import T from '../components/roxy/Text.astro';
+import { gallery } from '../config/roxy-gallery';
+import { roxy } from '../config/roxy';
+---
+<RoxyLayout title="Wallpapers">
+  <Filters slot="left"/>
+  <section class="panel gallery-panel">
+    <div class="gallery-heading"><h1><T k="chooseImages"/></h1><button id="gallery-reset"><T k="reset"/> ↻</button></div>
+    <div class="gallery-list" id="gallery-list">
+      {gallery.map((image,index)=><article class="gallery-item" data-image-id={image.id}>
+        <label><img src={image.src} alt={image.title} loading="lazy"/><span class="gallery-caption"><input type="checkbox" value={image.id} checked/><span>{image.title}</span><b class="image-order">{index+1}</b></span></label>
+        <div class="gallery-actions"><a href={image.source} target="_blank" rel="noopener"><T k="original"/> ↗</a><button data-move="-1" aria-label="上移" data-i18n-label="moveUp">↑</button><button data-move="1" aria-label="下移" data-i18n-label="moveDown">↓</button></div>
+      </article>)}
+    </div>
+    <p id="gallery-status" class="gallery-status" role="status" aria-live="polite"></p>
+    <button class="saver-launch" data-saver-open><T k="enterScreensaver"/> ⛶</button>
+    <details class="gallery-help"><summary><T k="addImages"/></summary><p><T k="addImagesHelp"/></p><a href={`${roxy.repository}/tree/${roxy.branch}/public/images/roxy`} target="_blank" rel="noopener"><T k="imageFolder"/> ↗</a> · <a href={`${roxy.repository}/blob/${roxy.branch}/src/config/roxy-gallery.ts`} target="_blank" rel="noopener"><T k="imageCatalog"/> ↗</a></details>
+  </section>
+</RoxyLayout>

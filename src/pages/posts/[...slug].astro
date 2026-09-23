@@ -1,26 +1,46 @@
 ---
-import {render} from 'astro:content';
-import RoxyLayout from '../../layouts/RoxyLayout.astro';
-import Icon from '../../components/roxy/Icon.astro';
-import MermaidManager from '../../components/features/markdown/MermaidManager.astro';
-import {posts,slugOf,postHref,day,wordCount,referencesTo} from '../../utils/roxy';
-import {roxy} from '../../config/roxy';
-import downloads from '../../data/roxy-downloads.json';
-export async function getStaticPaths(){return (await posts()).map(entry=>({params:{slug:slugOf(entry.id)},props:{entry}}))}
-const {entry}=Astro.props;
-const {Content,headings}=await render(entry);
-headings.forEach(h=>h.text=h.text.replace(/#$/,''));
-const all=await posts();
-const backlinks=all.filter(p=>p.id!==entry.id&&referencesTo(p.body||'',p.id,entry.id));
-const related=all.filter(p=>p.id!==entry.id&&p.data.tags.some(t=>entry.data.tags.includes(t)));
-const index=all.findIndex(p=>p.id===entry.id);
-const download=(downloads as Record<string,{file:string,source:string}>)[slugOf(entry.id)];
+import { render } from "astro:content";
+import RoxyLayout from "../../layouts/RoxyLayout.astro";
+import Icon from "../../components/roxy/Icon.astro";
+import T from "../../components/roxy/Text.astro";
+import MermaidManager from "../../components/features/markdown/MermaidManager.astro";
+import {
+	posts,
+	slugOf,
+	postHref,
+	day,
+	wordCount,
+	referencesTo,
+} from "../../utils/roxy";
+import { roxy } from "../../config/roxy";
+import downloads from "../../data/roxy-downloads.json";
+export async function getStaticPaths() {
+	return (await posts()).map((entry) => ({
+		params: { slug: slugOf(entry.id) },
+		props: { entry },
+	}));
+}
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+headings.forEach((h) => (h.text = h.text.replace(/#$/, "")));
+const all = await posts();
+const backlinks = all.filter(
+	(p) => p.id !== entry.id && referencesTo(p.body || "", p.id, entry.id),
+);
+const related = all.filter(
+	(p) =>
+		p.id !== entry.id && p.data.tags.some((t) => entry.data.tags.includes(t)),
+);
+const index = all.findIndex((p) => p.id === entry.id);
+const download = (
+	downloads as Record<string, { file: string; source: string }>
+)[slugOf(entry.id)];
 ---
-<RoxyLayout title={entry.data.title} background={entry.data.background} backgroundPosition={entry.data.backgroundPosition}>
-<section class="panel" slot="left"><div class="tabs" role="tablist"><button class="active" data-tab="toc" role="tab" aria-selected="true">本文目录</button><button data-tab="related" role="tab" aria-selected="false">标签文章</button></div><div class="toc" data-tab-panel="toc">{headings.filter(h=>h.depth<=3).map(h=><a href={`#${h.slug}`} data-depth={h.depth}>{h.text}</a>)}{!headings.length&&<p class="muted">这篇文章暂无小标题。</p>}</div><div data-tab-panel="related" hidden><div class="chips">{entry.data.tags.map(t=><a class="chip" href={`/?tag=${encodeURIComponent(t)}`}>{t}</a>)}</div>{related.map(p=><a class="related-link" href={postHref(p.id)}>{p.data.title}</a>)}</div></section>
-<article class="panel article"><header class="article-header"><div class="breadcrumb"><a href="/">首页</a> / {entry.data.category||'文章'}</div><div class="chips">{entry.data.tags.map(t=><a class="chip" href={`/?tag=${encodeURIComponent(t)}`}>#{t}</a>)}{entry.data.moods.map(m=><span class="chip">{m}</span>)}</div><h1>{entry.data.title}</h1><div class="article-meta"><span>发布于 {day(entry.data.published)}</span>{entry.data.updated&&<span>更新于 {day(entry.data.updated)}</span>}<span>{wordCount(entry.body||'')} 字 · {Math.max(1,Math.ceil(wordCount(entry.body||'')/350))} 分钟</span><span id="busuanzi_container_page_pv" style="display:none">阅读 <span id="busuanzi_value_page_pv"></span> 次</span></div></header>
+<RoxyLayout article title={entry.data.title} background={entry.data.background} backgroundPosition={entry.data.backgroundPosition}>
+<section class="panel" slot="left"><div class="tabs" role="tablist"><button class="active" data-tab="toc" role="tab" aria-selected="true"><T k="toc"/></button><button data-tab="related" role="tab" aria-selected="false"><T k="related"/></button></div><div class="toc" data-tab-panel="toc">{headings.filter(h=>h.depth<=3).map(h=><a href={`#${h.slug}`} data-depth={h.depth}>{h.text}</a>)}</div><div data-tab-panel="related" hidden><div class="chips">{entry.data.tags.map(t=><a class="chip" href={`/browse/?tag=${encodeURIComponent(t)}`}>{t}</a>)}</div>{related.map(p=><a class="related-link" href={postHref(p.id)}>{p.data.title}</a>)}</div></section>
+<article class="panel article"><header class="article-header"><div class="breadcrumb"><a href="/"><T k="home"/></a> / <a href={`/browse/?type=${encodeURIComponent(entry.data.category || '')}`}>{entry.data.category}</a></div><div class="chips">{entry.data.tags.map(t=><a class="chip" href={`/browse/?tag=${encodeURIComponent(t)}`}># {t}</a>)}{entry.data.moods.map(m=><a class="chip" href={`/browse/?mood=${encodeURIComponent(m)}`}>{m}</a>)}</div><h1>{entry.data.title}</h1><div class="article-meta"><span><T k="published"/> {day(entry.data.published)}</span>{entry.data.updated&&<span><T k="updated"/> {day(entry.data.updated)}</span>}<span>{wordCount(entry.body||'')} <T k="wordUnit"/> · {Math.max(1,Math.ceil(wordCount(entry.body||'')/350))} <T k="minutes"/></span><span id="busuanzi_container_page_pv" style="display:none"><T k="reads"/> <span id="busuanzi_value_page_pv"></span></span></div></header>
 <div class="prose custom-md" data-pagefind-body><Content/></div><MermaidManager/>
-<section class="article-download"><h3>把这篇记录带走</h3><div class="download-links">{download&&<a href={`/downloads/${download.file}`} download><Icon name="download" size={14}/>{download.file.endsWith('.zip')?'下载正文与图片 ZIP':'下载 Markdown'}</a>}{download&&<a href={`${roxy.repository}/blob/${roxy.branch}/src/content/posts/${download.source}`} target="_blank" rel="noopener">GitHub 源文 ↗</a>}{download&&<a href={`${roxy.repository}/blob/${roxy.branch}/public/downloads/${download.file}`} target="_blank" rel="noopener">仓库下载入口 ↗</a>}{entry.data.sourceLink&&<a href={entry.data.sourceLink} target="_blank" rel="noopener">原文出处 ↗</a>}{entry.data.attachments.map(a=><a href={a.url} target="_blank" rel="noopener">{a.name} ↗</a>)}</div><p>图片包包含正文引用的本地图片；外部图片保留原链接。仓库入口在本站文件推送后可用。</p></section>
-<section class="backlinks"><h3>提到这篇文章的记录 <span class="muted">{backlinks.length}</span></h3>{backlinks.length?backlinks.map(p=><a href={postHref(p.id)}>↗ {p.data.title}</a>):<p class="muted" style="font-size:11px">还没有其他文章引用本文。</p>}</section></article>
-<div class="article-nav">{all[index+1]&&<a href={postHref(all[index+1].id)}><small>← 更早的记录</small>{all[index+1].data.title}</a>}{all[index-1]&&<a href={postHref(all[index-1].id)}><small>更新的记录 →</small>{all[index-1].data.title}</a>}</div>
+<section class="article-download"><h3><T k="download"/></h3><div class="download-links">{download&&<a href={`/downloads/${download.file}`} download><Icon name="download" size={14}/>{download.file.endsWith('.zip')?'Markdown + ZIP':'Markdown'}</a>}{download&&<a href={`${roxy.repository}/blob/${roxy.branch}/src/content/posts/${download.source}`} target="_blank" rel="noopener">GitHub <T k="source"/> ↗</a>}{download&&<a href={`${roxy.repository}/blob/${roxy.branch}/public/downloads/${download.file}`} target="_blank" rel="noopener"><T k="repository"/> ↗</a>}{entry.data.sourceLink&&<a href={entry.data.sourceLink} target="_blank" rel="noopener"><T k="original"/> ↗</a>}{entry.data.attachments.map(a=><a href={a.url} target="_blank" rel="noopener">{a.name} ↗</a>)}</div></section>
+{backlinks.length>0&&<section class="backlinks"><h3><T k="backlinks"/> <span class="muted">{backlinks.length}</span></h3>{backlinks.map(p=><a href={postHref(p.id)}>↗ {p.data.title}</a>)}</section>}</article>
+<div class="article-nav">{all[index+1]&&<a href={postHref(all[index+1].id)}><small>← <T k="previous"/></small>{all[index+1].data.title}</a>}{all[index-1]&&<a href={postHref(all[index-1].id)}><small><T k="next"/> →</small>{all[index-1].data.title}</a>}</div>
 </RoxyLayout>

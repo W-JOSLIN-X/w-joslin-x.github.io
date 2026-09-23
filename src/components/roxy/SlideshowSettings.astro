@@ -1,0 +1,12 @@
+---
+import T from './Text.astro';
+---
+<h3><T k="slideshow"/></h3>
+<label class="setting-row"><T k="slideshow"/><input type="checkbox" id="slideshow-enabled" role="switch" checked/><span class="switch"></span></label>
+<label class="number-setting"><T k="interval"/><span><input id="slideshow-interval" type="number" min="3" max="300" value="15"/> <T k="seconds"/></span></label>
+<label class="setting-row"><T k="random"/><input type="checkbox" id="slideshow-random" role="switch"/><span class="switch"></span></label>
+<div class="slide-controls"><button data-slide-prev aria-label="上一张" data-i18n-label="prevImage">‹</button><button data-slide-pause aria-label="暂停" data-i18n-label="pause">Ⅱ</button><button data-slide-next aria-label="下一张" data-i18n-label="nextImage">›</button><a href="/wallpapers/"><T k="chooseImages"/> ↗</a></div>
+<h3><T k="screensaver"/></h3>
+<button class="saver-launch" data-saver-open><T k="enterScreensaver"/> ⛶</button>
+<label class="setting-row"><T k="autoScreensaver"/><input type="checkbox" id="screensaver-auto" role="switch" checked/><span class="switch"></span></label>
+<label class="number-setting"><T k="idleTime"/><span><input id="screensaver-idle" type="number" min="1" max="60" value="5"/> <T k="minutes"/></span></label>

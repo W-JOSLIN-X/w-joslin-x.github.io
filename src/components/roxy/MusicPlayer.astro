@@ -1,0 +1,37 @@
+---
+import { musicTracks, musicDefaults } from '../../config/music';
+import Icon from './Icon.astro';
+import T from './Text.astro';
+import '../../styles/roxy-music.css';
+const first = musicTracks.find(track => track.src);
+const ids = musicTracks.map(track => track.id);
+if (new Set(ids).size !== ids.length) throw new Error('music.ts: 每首歌曲的 id 必须唯一。');
+---
+<section class="panel music-player sidebar-sticky" id="music-player" aria-labelledby="music-heading">
+  <h3 id="music-heading"><T k="musicPlayer"/></h3>
+  <div class="player-summary">
+    <div class="player-disc"><span class="disc-fallback"><Icon name="music" size={25}/></span><img id="music-cover" src={first?.cover} alt="" hidden={!first?.cover}/></div>
+    <div class="player-details"><h4 id="music-title">{first?.title || <T k="songPlaceholder"/>}</h4><p id="music-artist">{first?.artist}</p>
+      <div class="player-subline"><span class="player-time"><span id="music-current">0:00</span> / <span id="music-duration">0:00</span></span><div class="player-volume"><button id="music-mute" aria-label="静音" data-i18n-label="mute" aria-pressed="false"><span class="sound-on"><Icon name="volume" size={14}/></span><span class="sound-off" hidden><Icon name="volumeOff" size={14}/></span></button><input id="music-volume" type="range" min="0" max="1" step="0.01" value={musicDefaults.volume} aria-label="音量" data-i18n-label="volume"/></div></div>
+    </div>
+  </div>
+  <input class="player-seek" id="music-seek" type="range" min="0" max="100" step="0.1" value="0" disabled aria-label="播放进度" data-i18n-label="seek"/>
+  <div class="player-controls">
+    <button id="music-mode" aria-label="列表循环"><span data-mode-icon="list"><Icon name="repeat" size={18}/></span><span data-mode-icon="single" hidden><Icon name="repeat" size={18}/><b>1</b></span><span data-mode-icon="shuffle" hidden><Icon name="shuffle" size={18}/></span></button>
+    <button id="music-prev" aria-label="上一首" data-i18n-label="prevTrack" disabled={!first}><Icon name="previousTrack" size={17}/></button>
+    <button id="music-play" class="player-play" aria-label="播放" disabled={!first} aria-pressed="false"><span class="play-icon"><Icon name="play" size={21}/></span><span class="pause-icon" hidden><Icon name="pause" size={21}/></span><span class="loading-icon" hidden></span></button>
+    <button id="music-next" aria-label="下一首" data-i18n-label="nextTrack" disabled={!first}><Icon name="nextTrack" size={17}/></button>
+    <button id="music-list-toggle" aria-label="播放列表" data-i18n-label="playlist" aria-expanded="true" aria-controls="music-playlist"><Icon name="playlist" size={17}/></button>
+  </div>
+  <p id="music-status" class="player-status" role="status" aria-live="polite" hidden></p>
+  <div class="player-playlist" id="music-playlist" role="group" aria-label="播放列表" data-i18n-label="playlist">
+    {musicTracks.map(track=><button class="playlist-track" data-track-id={track.id} data-track-src={track.src || undefined} disabled={!track.src} aria-current={track.id===first?.id?'true':undefined}>
+      <span class="track-cover"><Icon name="music" size={17}/>{track.cover&&<img src={track.cover} alt="" loading="lazy"/>}</span>
+      <span class="track-description"><strong>{track.title || <T k="songPlaceholder"/>}</strong><small>{track.artist || (!track.src && <T k="comingSoon"/>)}</small></span>
+      <span class="track-playing" aria-hidden="true"><i></i><i></i><i></i></span>
+    </button>)}
+  </div>
+  <audio id="music-audio" preload="metadata" src={first?.src} hidden></audio>
+  <noscript><audio controls preload="none" src={first?.src}></audio></noscript>
+</section>
+<script src="../../scripts/roxy-music.ts"></script>

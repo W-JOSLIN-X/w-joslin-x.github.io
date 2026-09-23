@@ -1,13 +1,14 @@
 ---
-import { posts } from '../../utils/roxy';
-const all=await posts();
-const categories=[...new Set(all.map(p=>p.data.category).filter(Boolean))];
-const tags=[...new Set(all.flatMap(p=>p.data.tags))];
-const moods=[...new Set(all.flatMap(p=>p.data.moods))];
+import { posts } from "../../utils/roxy";
+import T from "./Text.astro";
+const all = await posts();
+const categories = [
+	...new Set(all.map((p) => p.data.category).filter(Boolean)),
+];
+const tags = [...new Set(all.flatMap((p) => p.data.tags))];
+const moods = [...new Set(all.flatMap((p) => p.data.moods))];
 ---
-<section class="panel filters"><div class="filter-head"><h2>发现记录</h2><button class="reset-filter" data-reset-filter>重置 ↺</button></div>
-<fieldset class="filter-group"><legend>文章类型</legend><div class="type-options"><button class="filter-option active" data-category="" aria-pressed="true"><span>▤　全部文章</span><small>{all.length}</small></button>{categories.map(c=><button class="filter-option" data-category={c} aria-pressed="false"><span>{c}</span><small>{all.filter(p=>p.data.category===c).length}</small></button>)}</div></fieldset>
-<fieldset class="filter-group"><legend>主题标签 · 同时匹配</legend><div class="chips">{tags.map(t=><button class="chip" data-filter-tag={t} aria-pressed="false">{t}</button>)}</div></fieldset>
-<fieldset class="filter-group"><legend>这一刻的情绪 · 任意匹配</legend><div class="chips">{moods.map(m=><button class="chip" data-filter-mood={m} aria-pressed="false">{m}</button>)}</div></fieldset>
-<p class="filter-caption">用一个关键词，<br/>找回当时的思考。</p></section>
-<p class="left-footer">按首次发布时间排列<br/>认真记下，也随意写写。</p>
+<section class="panel filters"><div class="filter-head"><h3><T k="filter"/></h3><a href="/browse/" data-reset-filter aria-label="Reset">↻</a></div>
+<fieldset class="filter-group"><legend><T k="categories"/></legend><div class="type-options"><a class="filter-option" data-category="" href="/browse/"><T k="all"/><small>{all.length}</small></a>{categories.map(c=><a class="filter-option" data-category={c} href={`/browse/?type=${encodeURIComponent(c || '')}`}><span>{c}</span><small>{all.filter(p=>p.data.category===c).length}</small></a>)}</div></fieldset>
+<fieldset class="filter-group"><legend><T k="tags"/></legend><div class="chips">{tags.map(t=><a class="chip" data-filter-tag={t} href={`/browse/?tag=${encodeURIComponent(t)}`}>{t}</a>)}</div></fieldset>
+<fieldset class="filter-group"><legend><T k="moods"/></legend><div class="chips">{moods.map(m=><a class="chip" data-filter-mood={m} href={`/browse/?mood=${encodeURIComponent(m)}`}>{m}</a>)}</div></fieldset></section>

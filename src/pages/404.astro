@@ -1,4 +1,5 @@
 ---
-import RoxyLayout from '../layouts/RoxyLayout.astro';
+import RoxyLayout from "../layouts/RoxyLayout.astro";
+import T from "../components/roxy/Text.astro";
 ---
-<RoxyLayout title="页面未找到"><section class="panel empty-state"><h1>这页还没有写下。</h1><p>链接可能已改变，回首页找找吧。</p><a class="secondary" href="/">回到首页</a></section></RoxyLayout>
+<RoxyLayout title="404"><section class="panel empty-state"><h1>404</h1><a class="chip" href="/"><T k="home"/></a></section></RoxyLayout>

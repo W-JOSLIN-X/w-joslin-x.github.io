@@ -1,4 +1,6 @@
 ---
-import RoxyLayout from '../layouts/RoxyLayout.astro';
+import RoxyLayout from "../layouts/RoxyLayout.astro";
+import T from "../components/roxy/Text.astro";
+import { roxy } from "../config/roxy";
 ---
-<RoxyLayout title="关于"><section class="panel" slot="left"><h3>关于这个角落</h3><div class="toc"><a href="#hello">你好</a><a href="#reading">阅读与下载</a><a href="#artwork">插图出处</a></div></section><article class="panel article prose"><h1 id="hello">你好，我是 Roooooxy。</h1><p>这里收集笔记、随笔，以及值得留下来的文章。</p><blockquote>个人介绍待填写。慢慢写，也慢慢完善。</blockquote><h2 id="reading">阅读与下载</h2><p>首页可以按标题、正文、主题和情绪找到文章。含本地图片的文章提供 Markdown 与图片打包下载，纯文字文章提供 Markdown 文件。</p><p>当前文章带有“演示”标签，作为排版与功能示例，可在添加真实内容时删除。</p><h2 id="artwork">插图出处</h2><p>当前背景和示例封面来自 <a href="https://makeine-anime.com/" target="_blank" rel="noopener">TV 动画《败犬女主太多了！》官方网站</a>的公开宣传视觉图，作为主题背景与封面占位。原作与插图权利属于相应权利人，并非本博客原创或开放许可素材。</p><p>© 雨森たきび／小学館／マケイン応援委員会</p><p>头像由站主提供。主题基于 Astro 与 Mizuki 定制。</p></article></RoxyLayout>
+<RoxyLayout title="关于"><section class="panel" slot="left"><h3><T k="about"/></h3><div class="toc"><a href="#hello">Roooooxy</a><a href="#artwork">Artwork</a></div></section><article class="panel article prose"><h1 id="hello">Roooooxy</h1><p>{roxy.subtitle}</p><p><a href={roxy.repository}>GitHub ↗</a></p><h2 id="artwork">Artwork</h2><p><a href="https://makeine-anime.com/" target="_blank" rel="noopener">負けヒロインが多すぎる！</a></p><p>© 雨森たきび／小学館／マケイン応援委員会</p><p>Astro & Mizuki</p></article></RoxyLayout>

@@ -15,5 +15,14 @@ for(const file of files){const raw=fs.readFileSync(file,'utf8');const {data}=mat
 fs.writeFileSync('src/data/roxy-downloads.json',JSON.stringify(manifest,null,2)+'\n');
 let activity=[];
 try{const remote=execFileSync('git',['remote','get-url','origin'],{encoding:'utf8'}).trim();if(/W-JOSLIN-X\/w-joslin-x.github.io(?:\.git)?$/i.test(remote)){const log=execFileSync('git',['log','--format=%H%x09%cI%x09%s','--','src/content/posts'],{encoding:'utf8',maxBuffer:8*1024*1024});activity=log.trim().split('\n').filter(Boolean).map(line=>{const [hash,date,...message]=line.split('\t');return{hash,date:new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Shanghai'}).format(new Date(date)),message:message.join('\t'),url:`https://github.com/W-JOSLIN-X/w-joslin-x.github.io/commit/${hash}`}})}}catch{/* No project history yet. */}
+// Associate commits with current article folders, including edits to their images.
+for (const record of activity) {
+ const changed=execFileSync('git',['diff-tree','--root','--no-commit-id','--name-only','-r',record.hash,'--','src/content/posts'],{encoding:'utf8'}).trim().split('\n');
+ record.posts=Object.entries(manifest).filter(([,item])=>{
+  const article=`src/content/posts/${item.source}`;
+  const folder=path.posix.dirname(article)+'/';
+  return changed.some(file=>file===article||(item.source.endsWith('/index.md')&&file.startsWith(folder)));
+ }).map(([slug])=>slug);
+}
 fs.writeFileSync('src/data/roxy-activity.json',JSON.stringify(activity,null,2)+'\n');
 console.log(`Prepared ${Object.keys(manifest).length} article downloads; ${activity.length} content commits.`);

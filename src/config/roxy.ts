@@ -9,6 +9,5 @@ export const roxy = {
   avatar: "/images/roxy/avatar.jpg",
   background: "/images/roxy/makeine-06.jpg",
   backgroundPosition: "50% 56%",
-  music: { title: "歌单待添加", artist: "给日常留一点旋律", src: "" },
   statistics: true,
 };
