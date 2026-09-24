@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Nunito",
+    "css": "https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap",
+    "license": "https://raw.githubusercontent.com/google/fonts/main/ofl/nunito/OFL.txt"
+  },
+  {
+    "name": "Klee One",
+    "css": "https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap",
+    "license": "https://raw.githubusercontent.com/google/fonts/main/ofl/kleeone/OFL.txt"
+  },
+  {
+    "name": "Noto Sans",
+    "css": "https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap",
+    "license": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/OFL.txt"
+  },
+  {
+    "name": "Noto Sans SC",
+    "css": "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap",
+    "license": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanssc/OFL.txt"
+  },
+  {
+    "name": "Noto Sans JP",
+    "css": "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap",
+    "license": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansjp/OFL.txt"
+  },
+  {
+    "name": "Noto Serif",
+    "css": "https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&display=swap",
+    "license": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/OFL.txt"
+  },
+  {
+    "name": "Noto Serif SC",
+    "css": "https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap",
+    "license": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserifsc/OFL.txt"
+  },
+  {
+    "name": "Noto Serif JP",
+    "css": "https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap",
+    "license": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserifjp/OFL.txt"
+  },
+  {
+    "name": "rounded.7z",
+    "source": "https://github.com/CyanoHao/Resource-Han-Rounded/releases/download/v0.990/RHR-CN-0.990.7z"
+  },
+  {
+    "name": "wenkai.ttf",
+    "source": "https://raw.githubusercontent.com/lxgw/LxgwWenKai/main/fonts/TTF/LXGWWenKai-Regular.ttf"
+  }
+]

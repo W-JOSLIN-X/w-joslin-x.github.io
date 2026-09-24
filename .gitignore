@@ -1,70 +1,31 @@
-# build output
+# Reproducible output and local investigation/rollback copies
+.generated/
 dist/
-
-# generated types
 .astro/
-demo
-plans
-
-# dependencies
 node_modules/
 
-# logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# environment variables
+# Local credentials and editor files
 .env
-.env.production
-
-# content repository (independent mode)
-/content/
+.env.*
+!.env.example
+.idea/
+.vscode/
+.DS_Store
+*.log
 *.backup
 
-# config overrides synced from the content repository
-/src/config/overrides/
-
-# output of `pnpm export-config`
-/overrides-export/
-
-# Large zip files
-*.zip
-
-# macOS-specific files
-.DS_Store
-
-.vercel
-
+# Use pnpm-lock.yaml as the single dependency lockfile
 package-lock.json
-bun.lockb
 yarn.lock
+bun.lockb
 
-# ide
-.idea
-*.iml
-.claude
-
-cache/
-fuwari/
-src/data/myself.ts
-src/pages/myself.astro
-
-# Bangumi generated data
-src/data/bangumi-data.json
-
-# Bilibili generated data
-src/data/bilibili-data.json
-
-# Lighthouse CI
-.lighthouseci/
-
-# Live2D editor source files
-*.psd
-*.psd~
-*.cmo3
-*.vtube.json
-
-# Roooooxy generated archives are published alongside the source
-!public/downloads/*.zip
+# Local planning, handoff and acceptance records
+AGENTS.md
+CONTEXT.md
+使用说明.md
+docs/*
+!docs/素材来源.md
+scripts/measure-fonts.py
+scripts/font-benchmark.html
+scripts/migrate-v3.mjs
+scripts/audit-source.mjs

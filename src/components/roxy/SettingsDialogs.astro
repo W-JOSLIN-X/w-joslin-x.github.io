@@ -1,0 +1,14 @@
+---
+import T from './Text.astro';
+---
+<dialog id="settings-confirm" class="settings-dialog" aria-labelledby="confirm-message">
+  <form method="dialog"><p id="confirm-message"></p><div class="dialog-actions"><button value="cancel" autofocus><T k="cancelAction"/></button><button value="confirm"><T k="confirmAction"/></button></div></form>
+</dialog>
+<dialog id="settings-export" class="settings-dialog" aria-labelledby="export-title">
+  <h2 id="export-title"><T k="setDefault"/></h2><p><T k="exportExplanation"/></p>
+  <label for="export-content"><T k="groupConfiguration"/></label><textarea id="export-content" readonly spellcheck="false" rows="10"></textarea>
+  <p id="export-status" role="status"></p>
+  <div class="dialog-actions"><button id="export-copy"><T k="copyConfiguration"/></button><a id="export-download" download><T k="downloadConfiguration"/></a><a id="export-edit" target="_blank" rel="noopener"><T k="editOnGithub"/> ↗</a></div>
+  <ol><li><T k="publishStep1"/></li><li><T k="publishStep2"/></li><li><T k="publishStep3"/></li></ol>
+  <form method="dialog"><button autofocus><T k="close"/></button></form>
+</dialog>

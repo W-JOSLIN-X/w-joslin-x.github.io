@@ -1,0 +1,66 @@
+[
+	{
+		"id": "mechanical",
+		"source": "Audio/click_001.ogg",
+		"durationMs": 48.2,
+		"rmsDb": -24.33,
+		"peakDb": -3.0,
+		"sha256": "19bc0deabe860f328adb6224e87424b772a2ddd0a389540b479af4852b6951a0"
+	},
+	{
+		"id": "impact",
+		"source": "Audio/bong_001.ogg",
+		"durationMs": 119.9,
+		"rmsDb": -20.0,
+		"peakDb": -5.56,
+		"sha256": "144542ca889fa3c5bc67ab146fa3c8a492ede2b4ac3f10ab46177982921a4efc"
+	},
+	{
+		"id": "wood",
+		"source": "Audio/tick_004.ogg",
+		"durationMs": 55.1,
+		"rmsDb": -20.0,
+		"peakDb": -4.9,
+		"sha256": "26342003ccef0d0e6f3e6f45e399e173132c6b3e4e3e89d9c3541ed3e69fc32e"
+	},
+	{
+		"id": "pluck",
+		"source": "Audio/pluck_001.ogg",
+		"durationMs": 99.5,
+		"rmsDb": -23.67,
+		"peakDb": -3.0,
+		"sha256": "717bc0234a0bb5af0842ad3c67be8c05f9243dee1e46e4074db21a63459983bf"
+	},
+	{
+		"id": "bubble",
+		"source": "Audio/drop_001.ogg",
+		"durationMs": 121.5,
+		"rmsDb": -20.93,
+		"peakDb": -3.0,
+		"sha256": "b2e238823f49a2e18b36e7c51356feeaf2bf8b018f7998b605831edd9ebf99f1"
+	},
+	{
+		"id": "confirm",
+		"source": "Audio/confirmation_001.ogg",
+		"durationMs": 289.8,
+		"rmsDb": -20.0,
+		"peakDb": -9.66,
+		"sha256": "d68a8525537a154605ad4ed8701b5ca972aa211d430ee4163bd5ac42b9460e31"
+	},
+	{
+		"id": "energy",
+		"source": "Audio/select_005.ogg",
+		"durationMs": 223.8,
+		"rmsDb": -20.0,
+		"peakDb": -4.93,
+		"sha256": "be36a7ed18b7cb7aed323ad205015723b261ec5d93937558c809ceb20b9e9bc2"
+	},
+	{
+		"id": "arcade",
+		"source": "Audio/confirmation_004.ogg",
+		"durationMs": 490.4,
+		"rmsDb": -20.0,
+		"peakDb": -9.14,
+		"sha256": "53cad784bf5cfee665848878b4192bce98c0dad4789b263658a326863ba1c321"
+	}
+]

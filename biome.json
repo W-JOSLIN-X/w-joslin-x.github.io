@@ -8,13 +8,11 @@
 	"files": {
 		"includes": [
 			"**",
-			"!**/src/**/*.css",
 			"!**/dist/**/*",
 			"!**/node_modules/**/*",
 			"!**/.astro/**/*",
 			"!**/public/**/*",
-			"!**/demo/**/*",
-			"!**/scripts/**/*"
+			"!**/demo/**/*"
 		]
 	},
 	"formatter": {
@@ -22,7 +20,13 @@
 		"indentStyle": "tab",
 		"lineWidth": 80
 	},
-	"assist": { "actions": { "source": { "organizeImports": "on" } } },
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
 	"linter": {
 		"enabled": true,
 		"rules": {
@@ -65,5 +69,10 @@
 				}
 			}
 		}
-	]
+	],
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	}
 }

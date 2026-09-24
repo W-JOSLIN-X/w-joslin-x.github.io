@@ -1,11 +1,10 @@
 import { defineCollection } from "astro:content";
-import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
 import { postGlob } from "./loaders/post-loader";
 
 const postsCollection = defineCollection({
-	loader: postGlob({ pattern: "**/*.{md,mdx}", base: "./src/content/posts" }),
+	loader: postGlob({ pattern: "*/index.{md,mdx}", base: "./content/posts" }),
 	schema: z.object({
 		title: z.string(),
 		published: z.coerce.date(),
@@ -18,7 +17,9 @@ const postsCollection = defineCollection({
 		moods: z.array(z.string()).default([]),
 		background: z.string().optional(),
 		backgroundPosition: z.string().optional(),
-		attachments: z.array(z.object({name: z.string(), url: z.string()})).default([]),
+		attachments: z
+			.array(z.object({ name: z.string(), url: z.string() }))
+			.default([]),
 		lang: z.string().optional().default(""),
 		pinned: z.boolean().optional().default(false),
 		comment: z.boolean().optional().default(true),
@@ -49,11 +50,4 @@ const postsCollection = defineCollection({
 		_updatedDateOnly: z.boolean(),
 	}),
 });
-const specCollection = defineCollection({
-	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/spec" }),
-	schema: z.object({}),
-});
-export const collections = {
-	posts: postsCollection,
-	spec: specCollection,
-};
+export const collections = { posts: postsCollection };

@@ -1,0 +1,8 @@
+title: "歌曲名称"
+artist: "作者 / 演唱者"
+album: ""
+# 音频暂缺时保持空字符串，歌曲会显示在列表中并自动跳过播放。
+audio: ""
+cover: ""
+source: ""
+# 收到文件后填写，例如 audio: "audio.mp3"、cover: "cover.jpg"。

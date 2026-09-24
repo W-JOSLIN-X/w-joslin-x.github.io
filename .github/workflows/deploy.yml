@@ -28,6 +28,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:roxy
+      - run: pnpm check
       - run: pnpm build
       - run: node scripts/verify-roxy.mjs
       - uses: actions/upload-pages-artifact@v3

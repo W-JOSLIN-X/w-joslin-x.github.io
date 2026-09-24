@@ -1,0 +1,13 @@
+---
+import T from './Text.astro';
+const groups = [
+  { id:'move', title:'pointerEffect', options:[['stars','effectStars'],['glow','effectGlow'],['petals','effectPetals']] },
+  { id:'click', title:'clickEffect', options:[['ripple','effectRipple'],['stars','effectStars'],['hearts','effectHearts'],['petals','effectPetals']] },
+  { id:'sound', title:'soundEffect', options:[['mechanical','soundMechanical'],['impact','soundImpact'],['wood','soundWoodBlock'],['pluck','soundPluck'],['bubble','soundElasticBubble'],['confirm','soundConfirm'],['energy','soundEnergy'],['arcade','soundArcade']] },
+];
+---
+{groups.map(group => <div class="effect-setting"><label class="setting-row"><T k={group.title as any}/><input id={`effect-${group.id}-enabled`} type="checkbox" role="switch"/><span class="switch"></span></label><select id={`effect-${group.id}`} aria-label={group.title} data-i18n-label={group.title}>{group.options.map(([id,key])=><option value={id} data-i18n={key}>{id}</option>)}</select></div>)}
+<label class="effect-volume"><T k="volume"/><input id="effect-volume" type="range" min="0" max="100" value="20"/><output id="effect-volume-value">20%</output></label>
+<button id="effect-preview" type="button"><T k="soundPreview"/> ♪</button>
+
+<div class="sample-previews">{groups.find(g=>g.id==='sound')!.options.map(([id,key])=><button type="button" data-sound-preview={id} data-no-effects><T k={key as any}/> ♪</button>)}</div>

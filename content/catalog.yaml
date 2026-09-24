@@ -1,0 +1,51 @@
+# 顺序由此处控制；新增目录后把 ID 加进对应列表。
+backgrounds:
+  - makeine-station
+  - makeine-classroom
+  - makeine-rooftop
+  - makeine-shrine
+  - makeine-schoolyard
+  - rezero-tower
+  - rezero-desert
+  - yanineko-alley
+  - yanineko-balcony
+  - yanineko-afternoon
+  - yanineko-blue-sky
+  - yanineko-corridor
+  - yanineko-summer
+  - yanineko-friends
+  - chainsaw-assassins
+  - chainsaw-red
+  - chainsaw-city
+  - mushoku-meadow-hd
+  - mushoku-twilight
+  - mushoku-daisies
+  - rezero-flower-field
+  - rezero-winter
+  - rezero-memory-snow
+  - chainsaw-reze
+  - makeine-06
+  - makeine-03
+  - makeine-04
+  - mushoku-journey
+  - mushoku-meadow
+  - mushoku-labyrinth
+defaultBackgrounds:
+  - mushoku-meadow-hd
+  - makeine-classroom
+  - rezero-flower-field
+  - yanineko-blue-sky
+  - mushoku-twilight
+  - makeine-rooftop
+  - rezero-winter
+  - yanineko-summer
+  - rezero-memory-snow
+  - chainsaw-reze
+music:
+  - yanineko-op
+  - luv-sic-1
+  - luv-sic-2
+  - luv-sic-3
+  - luv-sic-4
+  - luv-sic-5
+  - luv-sic-6

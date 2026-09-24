@@ -1,13 +1,14 @@
 ---
-import { musicTracks, musicDefaults } from '../../config/music';
-import Icon from './Icon.astro';
-import T from './Text.astro';
-import '../../styles/roxy-music.css';
-const first = musicTracks.find(track => track.src);
-const ids = musicTracks.map(track => track.id);
-if (new Set(ids).size !== ids.length) throw new Error('music.ts: 每首歌曲的 id 必须唯一。');
+import { musicTracks, musicDefaults } from "../../config/music";
+import Icon from "./Icon.astro";
+import T from "./Text.astro";
+import "../../styles/roxy-music.css";
+const first = musicTracks.find((track) => track.src);
+const ids = musicTracks.map((track) => track.id);
+if (new Set(ids).size !== ids.length)
+	throw new Error("music.ts: 每首歌曲的 id 必须唯一。");
 ---
-<section class="panel music-player sidebar-sticky" id="music-player" aria-labelledby="music-heading">
+<section class="panel music-player sidebar-sticky" id="music-player" transition:persist="music-player" aria-labelledby="music-heading">
   <h3 id="music-heading"><T k="musicPlayer"/></h3>
   <div class="player-summary">
     <div class="player-disc"><span class="disc-fallback"><Icon name="music" size={25}/></span><img id="music-cover" src={first?.cover} alt="" hidden={!first?.cover}/></div>
@@ -27,7 +28,7 @@ if (new Set(ids).size !== ids.length) throw new Error('music.ts: 每首歌曲的
   <div class="player-playlist" id="music-playlist" role="group" aria-label="播放列表" data-i18n-label="playlist">
     {musicTracks.map(track=><button class="playlist-track" data-track-id={track.id} data-track-src={track.src || undefined} disabled={!track.src} aria-current={track.id===first?.id?'true':undefined}>
       <span class="track-cover"><Icon name="music" size={17}/>{track.cover&&<img src={track.cover} alt="" loading="lazy"/>}</span>
-      <span class="track-description"><strong>{track.title || <T k="songPlaceholder"/>}</strong><small>{track.artist || (!track.src && <T k="comingSoon"/>)}</small></span>
+      <span class="track-description"><strong title={track.album}>{track.title || <T k="songPlaceholder"/>}</strong><small>{track.artist}</small>{!track.src&&<small><T k="comingSoon"/></small>}</span>
       <span class="track-playing" aria-hidden="true"><i></i><i></i><i></i></span>
     </button>)}
   </div>

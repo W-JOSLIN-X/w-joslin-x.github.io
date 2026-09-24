@@ -1,0 +1,34 @@
+{
+	"appearance": {
+		"theme": "light",
+		"color": "#8a72ee",
+		"layout": "list",
+		"wide": false,
+		"font": "original"
+	},
+	"background": {
+		"mode": "banner",
+		"soft": false,
+		"edge": "soft",
+		"atmosphere": "none",
+		"overlayTransparency": 14,
+		"enabled": true,
+		"interval": 15,
+		"random": false,
+		"auto": true,
+		"idleMinutes": 5
+	},
+	"effects": {
+		"move": "stars",
+		"moveEnabled": false,
+		"click": "ripple",
+		"clickEnabled": true,
+		"touchClickEnabled": false,
+		"sound": "mechanical",
+		"soundEnabled": false,
+		"volume": 20
+	},
+	"other": {
+		"lang": "zh"
+	}
+}

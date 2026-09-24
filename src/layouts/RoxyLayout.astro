@@ -1,12 +1,19 @@
 ---
+import { appearanceDataset } from "../utils/roxy-defaults.mjs";
+import { ClientRouter } from "astro:transitions";
 import { roxy } from "../config/roxy";
 import { posts, day, wordCount } from "../utils/roxy";
 import Icon from "../components/roxy/Icon.astro";
 import T from "../components/roxy/Text.astro";
 import SlideshowSettings from "../components/roxy/SlideshowSettings.astro";
+import FontSelect from "../components/roxy/FontSelect.astro";
+import SettingsDialogs from "../components/roxy/SettingsDialogs.astro";
+import EffectsSettings from "../components/roxy/EffectsSettings.astro";
 import MusicPlayer from "../components/roxy/MusicPlayer.astro";
-import activity from "../data/roxy-activity.json";
+import activity from "../../.generated/activity.json";
 import "../styles/roxy.css";
+import "../styles/roxy-enhancements.css";
+import "../styles/roxy-personalization.css";
 import "katex/dist/katex.min.css";
 const {
 	title,
@@ -15,6 +22,7 @@ const {
 	background = roxy.background,
 	backgroundPosition = roxy.backgroundPosition,
 } = Astro.props;
+const published = appearanceDataset();
 const all = await posts();
 const words = all.reduce((n, p) => n + wordCount(p.body || ""), 0);
 const categories = new Set(all.map((p) => p.data.category).filter(Boolean))
@@ -31,14 +39,16 @@ const lastUpdate = all.length
 	: "";
 ---
 <!doctype html>
-<html lang="zh-CN" data-mode="banner" data-theme="light" data-lang="zh" data-waves="true">
+<html lang={published.lang === "zh" ? "zh-CN" : published.lang} {...Object.fromEntries(Object.entries(published).map(([key,value])=>[`data-${key.replace(/[A-Z]/g,c=>"-"+c.toLowerCase())}`,value]))} data-waves={String(published.edge !== "none")}>
 <head>
+<ClientRouter/>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="description" content={title?`${title} · ${roxy.title}`:roxy.subtitle}/>
 <title>{title?`${title} · ${roxy.title}`:roxy.title}</title><link rel="icon" href={roxy.avatar}/>
-<script is:inline>try{const s=JSON.parse(localStorage.getItem('roxy-appearance-v3')||localStorage.getItem('roxy-appearance-v2')||'{}');for(const k of ['mode','theme','soft','waves','layout','wide','lang'])if(s[k]!=null)document.documentElement.dataset[k]=s[k];if(Number.isFinite(s.hue)&&s.hue!==350)document.documentElement.style.setProperty('--hue',s.hue);if(/^#[\da-f]{6}$/i.test(s.color||''))document.documentElement.dataset.color=s.color;document.documentElement.lang={zh:'zh-CN',en:'en',ja:'ja'}[s.lang]||'zh-CN'}catch{}</script>
+<link rel="preload" as="image" href={background} fetchpriority="high"/>
+<script is:inline define:vars={{publishedDefaults: appearanceDataset()}}>try{const root=document.documentElement;const saved=JSON.parse(localStorage.getItem('roxy-appearance-v3')||localStorage.getItem('roxy-appearance-v2')||'{}');const s={...publishedDefaults,...saved};if(!/^#[\da-f]{6}$/i.test(saved.color||'')&&Number.isFinite(saved.hue)){const h=((saved.hue%360)+360)%360;const f=n=>{const k=(n+h/30)%12;return Math.round(255*(.69-.2418*Math.max(-1,Math.min(k-3,9-k,1)))).toString(16).padStart(2,'0')};s.color='#'+f(0)+f(8)+f(4);}if(saved.edge==null&&saved.waves!=null)s.edge=String(saved.waves)==='true'?'soft':'none';for(const k of Object.keys(publishedDefaults))root.dataset[k]=s[k];root.dataset.waves=String(s.edge!=='none');const value=Math.max(0,Math.min(100,Number(s.overlayTransparency)));root.style.setProperty('--overlay-panel-opacity',`${100-value}%`);root.lang={zh:'zh-CN',en:'en',ja:'ja'}[s.lang]||'zh-CN'}catch{Object.assign(document.documentElement.dataset,publishedDefaults)}</script>
 </head>
-<body class:list={[{home}]} data-article={String(article)} data-static-background={String(!!Astro.props.background)} style={`--page-image:url('${background}');--image-focus:${backgroundPosition}`}>
+<body data-article-id={Astro.props.articleId || ""} data-article-lang={Astro.props.articleLang || "zh-CN"} class:list={[{home}]} data-article={String(article)} data-static-background={String(!!Astro.props.background)} style={`--page-image:url('${background}');--image-focus:${backgroundPosition}`}>
 <a class="skip-link" href="#main"><T k="skip"/></a><div class="wallpaper" aria-hidden="true"></div>
 <header class="topbar" id="topbar">
 <a class="brand" href="/">Roooooxy’s BLOG</a>
@@ -46,7 +56,7 @@ const lastUpdate = all.length
 <div class="tools"><form class="nav-search" action="/browse/" role="search"><button type="submit" aria-label="搜索" data-i18n-label="search"><Icon name="search" size={17}/></button><input name="q" id="search-input" type="search" aria-label="搜索" data-i18n-label="search" placeholder="搜索" data-i18n-placeholder="search" autocomplete="off"/><select name="scope" id="search-scope" aria-label="Search scope"><option value="title" data-i18n="titleOnly">标题</option><option value="full" data-i18n="fullText">全文</option></select></form><button id="search-mobile" class="search-mobile" aria-label="搜索" data-i18n-label="search"><Icon name="search"/></button><button id="appearance-open" aria-label="外观" data-i18n-label="appearance" aria-expanded="false" aria-controls="appearance"><Icon name="palette"/></button><button id="theme-toggle" aria-label="Light / Dark"><Icon name="sun"/></button><button class="mobile-only" data-drawer="right-sidebar" aria-label="个人资料" data-i18n-label="profile"><Icon name="user"/></button></div>
 </header>
 <section class:list={['hero',{compact:!home}]} aria-label="Banner"><div class="hero-image"></div><svg class="waves" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true"><g><path d="M-1440 25Q-1080 85-720 25T0 25T720 25T1440 25T2160 25T2880 25V80H-1440Z"/><path d="M-1440 40Q-1080 0-720 40T0 40T720 40T1440 40T2160 40T2880 40V80H-1440Z"/><path d="M-1440 55Q-1080 10-720 55T0 55T720 55T1440 55T2160 55T2880 55V80H-1440Z"/></g></svg></section>
-<div class="mobile-toolbar"><button data-drawer="left-sidebar"><Icon name="menu"/><T k={article?'toc':'filter'}/></button></div>
+<div class="mobile-toolbar"><button data-drawer={article ? undefined : "left-sidebar"} data-toc-toggle={article ? "" : undefined}><Icon name="menu"/><T k={article?'toc':'filter'}/></button></div>
 <div class="site-grid"><aside id="left-sidebar" class="sidebar left"><button class="drawer-close" aria-label="关闭" data-i18n-label="close"><Icon name="close"/></button><slot name="left"/></aside><main id="main" tabindex="-1"><slot/></main>
 <aside id="right-sidebar" class="sidebar right"><button class="drawer-close" aria-label="关闭" data-i18n-label="close"><Icon name="close"/></button>
 <section class="panel profile"><a href="/about/" class="avatar-link"><img class="avatar" src={roxy.avatar} alt="Roooooxy"/></a><h2>{roxy.name}</h2><div class="profile-divider"></div><p class="motto">{roxy.motto==='格言待填写'?<T k="motto"/>:roxy.motto}</p><div class="social-links"><a href={roxy.repository} target="_blank" rel="noopener" aria-label="GitHub"><Icon name="github" size={24}/></a><a href="/rss.xml" aria-label="RSS"><Icon name="rss" size={23}/></a><a href="/about/" aria-label="About"><Icon name="user" size={22}/></a></div></section>
@@ -56,16 +66,30 @@ const lastUpdate = all.length
 <MusicPlayer/>
 </aside></div>
 <footer><p>© {new Date().getFullYear()} {roxy.name}. All Rights Reserved. / <a href="/rss.xml">RSS</a> / <a href="/atom.xml">Atom</a> / <a href="/sitemap-index.xml">Sitemap</a></p><p>Powered by <a href="https://astro.build/">Astro</a> & <a href="https://github.com/LyraVoid/Mizuki">Mizuki</a></p>{roxy.statistics&&<p id="busuanzi_container_site_pv" style="display:none"><T k="visits"/> <span id="busuanzi_value_site_pv"></span></p>}</footer>
+<div id="music-mini" class="music-mini" transition:persist="music-mini"><button id="music-mini-expand" aria-label="播放器" data-i18n-label="musicPlayer"><img id="music-mini-cover" alt=""/><span id="music-mini-title"></span></button><button id="music-mini-play" aria-label="播放" data-i18n-label="play">▶</button><button id="music-mini-collapse" aria-label="收起" data-i18n-label="close">⌄</button></div>
 <button class="back-top" aria-label="回到顶部" data-i18n-label="top" id="back-top">↑</button>
-<section id="appearance" class="appearance-panel" hidden role="dialog" aria-label="外观" data-i18n-label="appearance"><div class="appearance-title"><h3><T k="themeColor"/></h3><button id="reset-color" aria-label="Reset color">↻</button><output id="hue-value">250</output><button id="appearance-close" aria-label="关闭" data-i18n-label="close"><Icon name="close" size={15}/></button></div><input class="hue-slider" id="hue-slider" type="range" min="0" max="360" value="250" aria-label="主题色" data-i18n-label="themeColor"/><label class="color-setting"><input id="color-picker" type="color" value="#8a72ee" aria-label="调色盘" data-i18n-label="colorPicker"/><T k="colorPicker"/><output id="color-value">#8a72ee</output></label>
-<h3><T k="wallpaper"/></h3><div class="wallpaper-options">{(['banner','fullscreen','overlay','none'] as const).map(mode=><button data-mode={mode} aria-pressed={mode==='banner'}><Icon name={mode==='none'?'close':'file'} size={16}/><T k={mode}/><span class="selected-mark">✓</span></button>)}</div>
-<h3><T k="options"/></h3><label class="setting-row"><T k="soft"/><input type="checkbox" id="setting-soft" role="switch"/><span class="switch"></span></label><label class="setting-row"><T k="waves"/><input type="checkbox" id="setting-waves" role="switch" checked/><span class="switch"></span></label>
+<section id="appearance" class="appearance-panel" hidden role="dialog" aria-label="外观" data-i18n-label="appearance">
+<div class="appearance-tabs" role="tablist" aria-label="外观设置" data-i18n-label="appearance">{[['appearance','appearance'],['background','wallpaper'],['effects','effects'],['other','otherSettings']].map(([id,key])=><button id={`appearance-tab-${id}`} role="tab" data-appearance-tab={id} aria-controls={`appearance-panel-${id}`} aria-selected={id==='appearance'}><T k={key as any}/></button>)}</div>
+<div class="appearance-content">
+<div id="appearance-panel-appearance" data-appearance-panel="appearance" role="tabpanel" aria-labelledby="appearance-tab-appearance"><div class="appearance-title"><h3><T k="themeColor"/></h3><button id="reset-color" aria-label="Reset color">↻</button><output id="hue-value">250</output></div><input class="hue-slider" id="hue-slider" type="range" min="0" max="360" value="250" aria-label="主题色" data-i18n-label="themeColor"/><label class="color-setting"><input id="color-picker" type="color" value="#8a72ee" aria-label="调色盘" data-i18n-label="colorPicker"/><T k="colorPicker"/><output id="color-value">#8a72ee</output></label>
+<FontSelect/><h3><T k="layout"/></h3><div class="segmented"><button data-layout="list"><T k="list"/></button><button data-layout="grid"><T k="grid"/></button></div><label class="setting-row"><T k="wide"/><input type="checkbox" id="setting-wide" role="switch"/><span class="switch"></span></label>
+</div>
+<div id="appearance-panel-background" data-appearance-panel="background" role="tabpanel" aria-labelledby="appearance-tab-background" hidden><p id="focus-background-hint" hidden><T k="focusBackgroundLocked"/></p><h3><T k="wallpaper"/></h3><div class="wallpaper-options">{(['banner','fullscreen','overlay','none'] as const).map(mode=><button data-mode={mode} aria-pressed={mode==='banner'}><Icon name={mode==='none'?'close':'file'} size={16}/><T k={mode}/><span class="selected-mark">✓</span></button>)}</div>
+<label class="overlay-setting" for="overlay-transparency"><span class="overlay-setting-heading"><T k="overlayTransparency"/><output id="overlay-transparency-value" for="overlay-transparency">14%</output></span><input id="overlay-transparency" type="range" min="0" max="100" step="1" value="14"/></label>
+<h3><T k="options"/></h3><label class="setting-row"><T k="soft"/><input type="checkbox" id="setting-soft" role="switch"/><span class="switch"></span></label><label class="font-choice"><T k="bannerEdge"/><select id="setting-edge">{[['none','motionOff'],['soft','softWaves'],['layered','layeredWaves'],['clouds','cloudWaves']].map(([id,key])=><option value={id} data-i18n={key}>{id}</option>)}</select></label><label class="font-choice"><T k="backgroundAtmosphere"/><select id="setting-atmosphere">{[['none','motionOff'],['sakura','sakura'],['stars','effectStars'],['ribbons','ribbons']].map(([id,key])=><option value={id} data-i18n={key}>{id}</option>)}</select></label>
 <SlideshowSettings/>
-<h3><T k="layout"/></h3><div class="segmented"><button data-layout="list"><T k="list"/></button><button data-layout="grid"><T k="grid"/></button></div><label class="setting-row"><T k="wide"/><input type="checkbox" id="setting-wide" role="switch"/><span class="switch"></span></label>
-<h3><T k="language"/></h3><div class="segmented languages"><button data-lang="zh">中文</button><button data-lang="en">English</button><button data-lang="ja">日本語</button></div><button id="reset-appearance" class="reset-appearance"><T k="reset"/> ↻</button></section>
+</div>
+<div id="appearance-panel-effects" data-appearance-panel="effects" role="tabpanel" aria-labelledby="appearance-tab-effects" hidden><EffectsSettings/></div>
+<div id="appearance-panel-other" data-appearance-panel="other" role="tabpanel" aria-labelledby="appearance-tab-other" hidden><h3><T k="language"/></h3><div class="segmented languages"><button data-lang="zh">中文</button><button data-lang="en">English</button><button data-lang="ja">日本語</button></div><button id="reset-appearance" class="reset-appearance"><T k="reset"/> ↻</button></div></div><div class="appearance-actions"><button id="reset-current-group"><T k="resetGroup"/></button><button id="set-current-default"><T k="setDefault"/></button></div></section>
+<SettingsDialogs/>
 <script is:inline id="activity-data" type="application/json" set:html={JSON.stringify(activity).replace(/</g,'\\u003c')}/>
 {roxy.statistics&&<script is:inline>if(location.hostname==='w-joslin-x.github.io'){const s=document.createElement('script');s.src='https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';s.async=true;document.head.append(s)}</script>}
 <script src="../scripts/roxy-client.ts"></script>
 <dialog id="screensaver" aria-label="屏保" data-i18n-label="screensaver"><div class="screensaver-image" aria-hidden="true"></div><div class="screensaver-controls"><button data-slide-prev aria-label="上一张" data-i18n-label="prevImage">‹</button><button data-slide-pause aria-label="暂停" data-i18n-label="pause">Ⅱ</button><button data-slide-next aria-label="下一张" data-i18n-label="nextImage">›</button><button id="screensaver-close" autofocus aria-label="退出屏保" data-i18n-label="exitScreensaver"><Icon name="close"/></button></div></dialog>
 <script src="../scripts/roxy-slideshow.ts"></script>
+<script src="../scripts/roxy-personalization.ts"></script>
+<script src="../scripts/roxy-focus.ts"></script>
+<script src="../scripts/roxy-background-motion.ts"></script>
+<script src="../scripts/roxy-effects.ts"></script>
+<script src="../scripts/roxy-interactions.ts"></script>
 </body></html>

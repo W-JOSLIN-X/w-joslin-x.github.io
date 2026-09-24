@@ -1,0 +1,11 @@
+---
+import { fonts } from '../../config/roxy-fonts';
+import T from './Text.astro';
+const { article = false } = Astro.props;
+---
+<label class="font-choice"><T k="fontFamily"/><select id={article?'article-font':'global-font'}>
+{article && <option value="inherit" data-i18n="fontInherit">跟随全站</option>}
+{fonts.map(font => <option value={font.id} data-i18n={font.key}>{font.id}</option>)}
+</select></label>
+<p class="font-sample" data-font-sample={article?'article':'global'}><span lang="zh-CN">风与笔记</span> · <span lang="en">A quiet moment</span> · <span lang="ja">風と物語</span></p>
+<button type="button" class="font-retry" data-font-retry hidden><T k="fontRetry"/></button>

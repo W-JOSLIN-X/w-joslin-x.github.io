@@ -11,7 +11,9 @@ import matter from "gray-matter";
 import { matchesNoReferrerDomain } from "../utils/image-referrer.ts";
 import { resolvePostCoverSource } from "../utils/post-cover-source.ts";
 
-const POSTS_DIR = fileURLToPath(new URL("../content/posts/", import.meta.url));
+const POSTS_DIR = fileURLToPath(
+	new URL("../../content/posts/", import.meta.url),
+);
 const MARKDOWN_EXTENSION = /\.(?:md|mdx|markdown)$/i;
 const WIKI_LINK = /!?\[\[([^[\]\n]+)\]\]/g;
 const STANDALONE_WIKI_LINK = /^\[\[([^[\]\n]+)\]\]$/;
@@ -66,7 +68,10 @@ function collectPostMetas() {
 		}
 		for (const entry of entries) {
 			const filePath = path.join(directory, entry.name);
-			if (entry.isDirectory()) {
+			if (
+				entry.isDirectory() &&
+				!["images", "attachments"].includes(entry.name)
+			) {
 				stack.push(filePath);
 			} else if (MARKDOWN_EXTENSION.test(entry.name)) {
 				try {

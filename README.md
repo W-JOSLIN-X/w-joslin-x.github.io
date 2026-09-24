@@ -1,36 +1,43 @@
 # Roooooxy’s BLOG
 
-笔记、随笔与阅读收藏。基于 Mizuki / Astro 定制的个人博客。
+基于 Astro 与 Mizuki 的个人笔记网站，当前代码版本 v3.1.0。
 
-- 网站：https://w-joslin-x.github.io/
-- 首个版本：v1.0.0
-- 写作与外观配置：[使用说明](使用说明.md)
+[访问网站](https://w-joslin-x.github.io/)
 
-## 更新内容
+## 本地运行
 
-在 `src/content/posts/` 中维护 Markdown 及文章自己的图片目录。提交到 `main` 后，GitHub Actions 自动检查、构建并发布网站，同时生成下载包、反向引用和 Git 活跃记录。
-
-## 本地预览
-
-使用 Node.js 24 和 pnpm 11.5.3：
+使用 Node.js 22.12+（GitHub Actions 使用 24）与 pnpm 11.5.3。
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-正式构建与检查：
+验证与构建：
 
 ```sh
-pnpm test:roxy
+pnpm test
+pnpm check
 pnpm build
-node scripts/verify-roxy.mjs
+pnpm verify
+pnpm preview
 ```
 
-## 当前内容
+推送 `main` 后，GitHub Actions 验证并部署到 GitHub Pages。
 
-六篇带“演示”标签的文章用于展示阅读、搜索、公式、代码、流程图及下载。个人介绍、格言和音乐仍为明确占位；音乐未提供音源，网页宠物未启用。
+## 网站文件
 
-## 致谢与素材
+- `src/`：页面、组件、交互、样式及默认配置。
+- `content/posts/`：文章与附件。
+- `content/backgrounds/`、`content/music/`：背景及音乐素材、来源元信息。
+- `content/catalog.yaml`：图库顺序、默认图片和音乐清单。
+- `src/config/roxy-defaults.json`：四组网站默认设置。
+- `public/`：本地字体、音效等静态资源。
+- `templates/`：文章、背景与音乐模板。
+- `scripts/`、`tests/`：资源准备、构建与验证。
 
-主题基于 [Mizuki](https://github.com/LyraVoid/Mizuki) 和 [Astro](https://astro.build/)，保留原有许可证及第三方声明。插图出处见 [素材来源](docs/素材来源.md)。文章内容、头像和官方宣传插图不因代码许可证而获得额外授权。
+构建生成的 `.generated/`、`dist/`、缓存、依赖和个人开发文档不纳入网站源码。未提供音频的音乐条目只展示元信息，不可播放。
+
+## 许可与来源
+
+保留 [LICENSE](LICENSE)、[LICENSE.MIT](LICENSE.MIT)、[第三方声明](THIRD_PARTY_NOTICES.md) 和 [素材来源](docs/素材来源.md)。插图、封面及音乐不随代码许可证授权；各素材来源与许可见相应目录。

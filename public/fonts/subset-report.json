@@ -1,0 +1,26 @@
+[
+  {
+    "name": "maru",
+    "shards": 15,
+    "coreBytes": 130796,
+    "totalBytes": 1720308
+  },
+  {
+    "name": "loli",
+    "shards": 58,
+    "coreBytes": 187420,
+    "totalBytes": 5699964
+  },
+  {
+    "name": "wenkai",
+    "shards": 90,
+    "coreBytes": 208652,
+    "totalBytes": 10181828
+  },
+  {
+    "name": "rounded",
+    "shards": 59,
+    "coreBytes": 174516,
+    "totalBytes": 5797816
+  }
+]

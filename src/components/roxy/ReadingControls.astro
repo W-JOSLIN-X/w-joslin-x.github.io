@@ -1,0 +1,24 @@
+---
+import FontSelect from "./FontSelect.astro";
+import T from "./Text.astro";
+---
+<div class="article-topline">
+  <slot name="breadcrumb"/>
+  <div class="reading-toolbar">
+  <button id="reading-open" aria-expanded="false" aria-controls="reading-panel"><T k="readingSettings"/> Aa</button>
+  <button id="reading-focus" aria-pressed="false"><T k="focusReading"/></button>
+<button id="focus-toc" data-toc-toggle aria-controls="left-sidebar" aria-expanded="false"><T k="toc"/></button>
+<button id="reading-resume" hidden><T k="continueReading"/> ↓</button>
+  </div>
+</div>
+<section id="reading-panel" class="reading-panel" hidden aria-label="阅读设置" data-i18n-label="readingSettings">
+  <FontSelect article/>
+  <label><T k="fontSize"/><input id="reading-size" type="range" min="14" max="24" step="1"/><output id="reading-size-value"></output></label>
+  <label><T k="lineHeight"/><input id="reading-line" type="range" min="1.6" max="2.4" step="0.1"/><output id="reading-line-value"></output></label>
+  <label><T k="textWidth"/><select id="reading-width"><option value="compact" data-i18n="widthCompact">紧凑</option><option value="standard" data-i18n="widthStandard">标准</option><option value="wide" data-i18n="widthWide">宽版</option></select></label>
+  <label class="focus-width-setting"><T k="focusWidth"/><input id="focus-width" type="range" min="480" max="1440" step="1" value="960"/><output id="focus-width-value">960px</output></label>
+  <button id="reading-reset"><T k="reset"/> ↻</button>
+</section>
+<div id="floating-reading" class="floating-reading" hidden><button data-toc-toggle aria-controls="left-sidebar"><T k="toc"/></button><button id="floating-settings" aria-controls="reading-panel" aria-expanded="false"><T k="readingSettings"/></button><button data-focus-toggle><T k="focusReading"/></button></div>
+<dialog id="image-viewer" aria-label="图片" data-i18n-label="imagePreview"><button id="image-viewer-close" autofocus aria-label="关闭" data-i18n-label="close">×</button><img alt=""/><p></p></dialog>
+<script src="../../scripts/roxy-reading.ts"></script>

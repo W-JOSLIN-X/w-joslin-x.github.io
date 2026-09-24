@@ -1,4 +1,6 @@
 ---
+import { rankRelated } from "../../utils/roxy-personalization.mjs";
+import ReadingControls from "../../components/roxy/ReadingControls.astro";
 import { render } from "astro:content";
 import RoxyLayout from "../../layouts/RoxyLayout.astro";
 import Icon from "../../components/roxy/Icon.astro";
@@ -13,7 +15,7 @@ import {
 	referencesTo,
 } from "../../utils/roxy";
 import { roxy } from "../../config/roxy";
-import downloads from "../../data/roxy-downloads.json";
+import downloads from "../../../.generated/downloads.json";
 export async function getStaticPaths() {
 	return (await posts()).map((entry) => ({
 		params: { slug: slugOf(entry.id) },
@@ -27,20 +29,17 @@ const all = await posts();
 const backlinks = all.filter(
 	(p) => p.id !== entry.id && referencesTo(p.body || "", p.id, entry.id),
 );
-const related = all.filter(
-	(p) =>
-		p.id !== entry.id && p.data.tags.some((t) => entry.data.tags.includes(t)),
-);
+const related: typeof all = rankRelated(all, entry, (p: typeof all[number]) => referencesTo(entry.body || '', entry.id, p.id) || referencesTo(p.body || '', p.id, entry.id));
 const index = all.findIndex((p) => p.id === entry.id);
 const download = (
 	downloads as Record<string, { file: string; source: string }>
 )[slugOf(entry.id)];
 ---
-<RoxyLayout article title={entry.data.title} background={entry.data.background} backgroundPosition={entry.data.backgroundPosition}>
-<section class="panel" slot="left"><div class="tabs" role="tablist"><button class="active" data-tab="toc" role="tab" aria-selected="true"><T k="toc"/></button><button data-tab="related" role="tab" aria-selected="false"><T k="related"/></button></div><div class="toc" data-tab-panel="toc">{headings.filter(h=>h.depth<=3).map(h=><a href={`#${h.slug}`} data-depth={h.depth}>{h.text}</a>)}</div><div data-tab-panel="related" hidden><div class="chips">{entry.data.tags.map(t=><a class="chip" href={`/browse/?tag=${encodeURIComponent(t)}`}>{t}</a>)}</div>{related.map(p=><a class="related-link" href={postHref(p.id)}>{p.data.title}</a>)}</div></section>
-<article class="panel article"><header class="article-header"><div class="breadcrumb"><a href="/"><T k="home"/></a> / <a href={`/browse/?type=${encodeURIComponent(entry.data.category || '')}`}>{entry.data.category}</a></div><div class="chips">{entry.data.tags.map(t=><a class="chip" href={`/browse/?tag=${encodeURIComponent(t)}`}># {t}</a>)}{entry.data.moods.map(m=><a class="chip" href={`/browse/?mood=${encodeURIComponent(m)}`}>{m}</a>)}</div><h1>{entry.data.title}</h1><div class="article-meta"><span><T k="published"/> {day(entry.data.published)}</span>{entry.data.updated&&<span><T k="updated"/> {day(entry.data.updated)}</span>}<span>{wordCount(entry.body||'')} <T k="wordUnit"/> · {Math.max(1,Math.ceil(wordCount(entry.body||'')/350))} <T k="minutes"/></span><span id="busuanzi_container_page_pv" style="display:none"><T k="reads"/> <span id="busuanzi_value_page_pv"></span></span></div></header>
-<div class="prose custom-md" data-pagefind-body><Content/></div><MermaidManager/>
-<section class="article-download"><h3><T k="download"/></h3><div class="download-links">{download&&<a href={`/downloads/${download.file}`} download><Icon name="download" size={14}/>{download.file.endsWith('.zip')?'Markdown + ZIP':'Markdown'}</a>}{download&&<a href={`${roxy.repository}/blob/${roxy.branch}/src/content/posts/${download.source}`} target="_blank" rel="noopener">GitHub <T k="source"/> ↗</a>}{download&&<a href={`${roxy.repository}/blob/${roxy.branch}/public/downloads/${download.file}`} target="_blank" rel="noopener"><T k="repository"/> ↗</a>}{entry.data.sourceLink&&<a href={entry.data.sourceLink} target="_blank" rel="noopener"><T k="original"/> ↗</a>}{entry.data.attachments.map(a=><a href={a.url} target="_blank" rel="noopener">{a.name} ↗</a>)}</div></section>
+<RoxyLayout article articleId={entry.id} articleLang={entry.data.lang || "zh-CN"} title={entry.data.title} background={entry.data.background} backgroundPosition={entry.data.backgroundPosition}>
+<section class="panel" slot="left"><div class="tabs" role="tablist"><button class="active" data-tab="toc" role="tab" aria-selected="true"><T k="toc"/></button><button data-tab="related" role="tab" aria-selected="false"><T k="related"/></button></div><div class="toc article-toc" lang={entry.data.lang || "zh-CN"} data-tab-panel="toc">{headings.filter(h=>h.depth<=3).map(h=><a href={`#${h.slug}`} data-depth={h.depth}>{h.text}</a>)}</div><div data-tab-panel="related" hidden><div class="chips">{entry.data.tags.map(t=><a class="chip" href={`/browse/?tag=${encodeURIComponent(t)}`}>{t}</a>)}</div>{related.map(p=><a class="related-link" href={postHref(p.id)}>{p.data.title}</a>)}</div></section>
+<article class="panel article"><header class="article-header"><ReadingControls><div class="breadcrumb" slot="breadcrumb"><a href="/"><T k="home"/></a> / <a href={`/browse/?type=${encodeURIComponent(entry.data.category || '')}`}>{entry.data.category}</a></div></ReadingControls><div class="chips">{entry.data.tags.map(t=><a class="chip" href={`/browse/?tag=${encodeURIComponent(t)}`}># {t}</a>)}{entry.data.moods.map(m=><a class="chip" href={`/browse/?mood=${encodeURIComponent(m)}`}>{m}</a>)}</div><h1 lang={entry.data.lang || "zh-CN"}>{entry.data.title}</h1><div class="article-meta"><span><T k="published"/> {day(entry.data.published)}</span>{entry.data.updated&&<span><T k="updated"/> {day(entry.data.updated)}</span>}<span>{wordCount(entry.body||'')} <T k="wordUnit"/> · {Math.max(1,Math.ceil(wordCount(entry.body||'')/350))} <T k="minutes"/></span><span id="busuanzi_container_page_pv" style="display:none"><T k="reads"/> <span id="busuanzi_value_page_pv"></span></span></div></header>
+<div lang={entry.data.lang || "zh-CN"} class="prose custom-md" data-pagefind-body><Content/></div><MermaidManager/>
+<section class="article-download"><h3><T k="download"/></h3><div class="download-links"><button data-copy-article><T k="copyLink"/></button>{download&&<a href={`/downloads/${download.file}`} download><Icon name="download" size={14}/>{download.file.endsWith('.zip')?'Markdown + ZIP':'Markdown'}</a>}{download&&<a href={`${roxy.repository}/blob/${roxy.branch}/content/posts/${download.source}`} target="_blank" rel="noopener">GitHub <T k="source"/> ↗</a>}{download&&<a href={`${roxy.repository}/tree/${roxy.branch}/content/posts/${download.source.replace(/index\.md$/, "")}`} target="_blank" rel="noopener"><T k="repository"/> ↗</a>}{entry.data.sourceLink&&<a href={entry.data.sourceLink} target="_blank" rel="noopener"><T k="original"/> ↗</a>}{entry.data.attachments.map(a=><a href={a.url} target="_blank" rel="noopener">{a.name} ↗</a>)}</div></section>
 {backlinks.length>0&&<section class="backlinks"><h3><T k="backlinks"/> <span class="muted">{backlinks.length}</span></h3>{backlinks.map(p=><a href={postHref(p.id)}>↗ {p.data.title}</a>)}</section>}</article>
 <div class="article-nav">{all[index+1]&&<a href={postHref(all[index+1].id)}><small>← <T k="previous"/></small>{all[index+1].data.title}</a>}{all[index-1]&&<a href={postHref(all[index-1].id)}><small><T k="next"/> →</small>{all[index-1].data.title}</a>}</div>
 </RoxyLayout>

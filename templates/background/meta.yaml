@@ -1,0 +1,6 @@
+title: "背景名称"
+image: "image.jpg"
+source: "https://原始出处"
+# 横图人物在左侧时，可以试试 30% 50%；百分比表示图片裁切焦点。
+position: "50% 50%"
+mobilePosition: "50% 50%"
