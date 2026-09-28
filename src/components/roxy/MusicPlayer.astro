@@ -1,8 +1,9 @@
 ---
-import { musicTracks, musicDefaults } from "../../config/music";
+import { musicDefaults, musicTracks } from "../../config/music";
 import Icon from "./Icon.astro";
 import T from "./Text.astro";
 import "../../styles/roxy-music.css";
+
 const first = musicTracks.find((track) => track.src);
 const ids = musicTracks.map((track) => track.id);
 if (new Set(ids).size !== ids.length)

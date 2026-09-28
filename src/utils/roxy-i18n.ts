@@ -1,5 +1,10 @@
 export const messages = {
 	zh: {
+		searchScope: "搜索范围",
+		themeToggle: "切换浅色或深色模式",
+		navigation: "导航",
+		copyCode: "复制代码",
+		manualCopyCode: "复制失败，请选择代码并手动复制",
 		bannerEdge: "横幅边缘",
 		backgroundAtmosphere: "背景氛围",
 		motionOff: "关闭",
@@ -185,6 +190,11 @@ export const messages = {
 		skip: "跳到正文",
 	},
 	en: {
+		searchScope: "Search scope",
+		themeToggle: "Toggle light or dark mode",
+		navigation: "Navigation",
+		copyCode: "Copy code",
+		manualCopyCode: "Copy failed; select the code and copy manually",
 		bannerEdge: "Banner edge",
 		backgroundAtmosphere: "Background atmosphere",
 		motionOff: "Off",
@@ -373,6 +383,12 @@ export const messages = {
 		skip: "Skip to content",
 	},
 	ja: {
+		searchScope: "検索範囲",
+		themeToggle: "ライト・ダークモードを切り替え",
+		navigation: "ナビゲーション",
+		copyCode: "コードをコピー",
+		manualCopyCode:
+			"コピーできませんでした。コードを選択して手動でコピーしてください",
 		bannerEdge: "バナーの縁",
 		backgroundAtmosphere: "背景の演出",
 		motionOff: "オフ",
@@ -581,15 +597,13 @@ export function localize() {
 		const key = el.dataset.i18n as MessageKey;
 		if (messages[lang][key]) el.textContent = t(key);
 	});
-	document
-		.querySelectorAll<HTMLElement>("[data-i18n-label]")
-		.forEach((el) =>
-			el.setAttribute("aria-label", t(el.dataset.i18nLabel as MessageKey)),
-		);
+	document.querySelectorAll<HTMLElement>("[data-i18n-label]").forEach((el) => {
+		el.setAttribute("aria-label", t(el.dataset.i18nLabel as MessageKey));
+	});
 	document
 		.querySelectorAll<HTMLInputElement>("[data-i18n-placeholder]")
-		.forEach(
-			(el) => (el.placeholder = t(el.dataset.i18nPlaceholder as MessageKey)),
-		);
+		.forEach((el) => {
+			el.placeholder = t(el.dataset.i18nPlaceholder as MessageKey);
+		});
 	window.dispatchEvent(new Event("roxy:language"));
 }

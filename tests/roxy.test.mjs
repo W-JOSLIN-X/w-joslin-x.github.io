@@ -1,11 +1,12 @@
-import test from "node:test";
 import assert from "node:assert/strict";
+import test from "node:test";
 import { matchesPost } from "../src/utils/roxy-filter.mjs";
 import {
+	formatMusicTime,
 	nextTrack,
 	readMusicPreferences,
-	formatMusicTime,
 } from "../src/utils/roxy-music.mjs";
+
 const tracks = [
 	{ id: "one", src: "/one.mp3" },
 	{ id: "placeholder", src: "" },
@@ -51,16 +52,18 @@ test("removed music tracks and corrupted preferences cannot restore invalid play
 			.time,
 		43,
 	);
-	assert.equal(formatMusicTime(Infinity), "0:00");
+	assert.equal(formatMusicTime(Number.POSITIVE_INFINITY), "0:00");
 	assert.equal(formatMusicTime(172.52), "2:52");
 });
+
 import {
-	normalizeSlideshow,
-	nextImage,
-	shouldEnterScreensaver,
 	hexToHsl,
 	hslToHex,
+	nextImage,
+	normalizeSlideshow,
+	shouldEnterScreensaver,
 } from "../src/utils/roxy-slideshow.mjs";
+
 test("slideshow repairs stale selections without losing chosen order", () => {
 	const ids = ["a", "b", "c"];
 	assert.deepEqual(
@@ -72,7 +75,7 @@ test("slideshow repairs stale selections without losing chosen order", () => {
 		ids,
 	);
 	const repaired = normalizeSlideshow(
-		{ interval: -20, idleMinutes: Infinity, auto: "false" },
+		{ interval: -20, idleMinutes: Number.POSITIVE_INFINITY, auto: "false" },
 		ids,
 	);
 	assert.equal(repaired.interval, 3);
@@ -125,16 +128,19 @@ test("color picker preserves neutral and saturated colors across hue conversion"
 		const result = hslToHex(hsl.hue, hsl.saturation, hsl.lightness);
 		assert.ok(
 			Math.abs(
-				parseInt(result.slice(1, 3), 16) - parseInt(hex.slice(1, 3), 16),
+				Number.parseInt(result.slice(1, 3), 16) -
+					Number.parseInt(hex.slice(1, 3), 16),
 			) <= 1,
 		);
 	}
 });
+
 import {
+	matchesDay,
 	monthCells,
 	shanghaiDay,
-	matchesDay,
 } from "../src/utils/roxy-calendar.mjs";
+
 test("calendar aligns Monday, includes leap day and handles year boundaries", () => {
 	assert.equal(monthCells(2026, 8)[1], "2026-09-01");
 	assert.equal(monthCells(2024, 1).filter(Boolean).length, 29);

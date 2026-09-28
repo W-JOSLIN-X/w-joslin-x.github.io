@@ -1,9 +1,9 @@
-import { matchesPost } from "../utils/roxy-filter.mjs";
 import { matchesDay } from "../utils/roxy-calendar.mjs";
-import { excerpt, highlightSegments } from "../utils/roxy-search.mjs";
+import { matchesPost } from "../utils/roxy-filter.mjs";
 import { t } from "../utils/roxy-i18n";
-import { pageFeature } from "./core/page-scope";
+import { excerpt, highlightSegments } from "../utils/roxy-search.mjs";
 import { filterNavigation } from "./core/navigation";
+import { pageFeature } from "./core/page-scope";
 
 type Post = {
 	id: string;
@@ -24,7 +24,7 @@ type SearchRecord = {
 let fullText: Promise<Record<string, SearchRecord>> | undefined;
 let restoreSearchFocus = false;
 function loadText() {
-	return (fullText ||= fetch("/search/full.json", { cache: "no-cache" })
+	fullText ||= fetch("/search/full.json", { cache: "no-cache" })
 		.then((response) => {
 			if (!response.ok) throw Error("Search unavailable");
 			return response.json();
@@ -32,7 +32,8 @@ function loadText() {
 		.catch((error) => {
 			fullText = undefined;
 			throw error;
-		}));
+		});
+	return fullText;
 }
 function highlight(element: HTMLElement, text: string, query: string) {
 	element.replaceChildren(
@@ -61,13 +62,13 @@ pageFeature((lifecycle) => {
 	const retry = document.querySelector<HTMLButtonElement>("#search-retry")!;
 	const browse = root.dataset.browse === "true";
 	let sections: Record<string, SearchRecord> = {};
-	let limit = 12,
-		revision = 0;
+	let limit = 12;
+	let revision = 0;
 	async function update() {
-		const token = ++revision,
-			params = new URLSearchParams(location.search);
-		const q = params.get("q") || "",
-			searchScope = params.get("scope") === "full" ? "full" : "title";
+		const token = ++revision;
+		const params = new URLSearchParams(location.search);
+		const q = params.get("q") || "";
+		const searchScope = params.get("scope") === "full" ? "full" : "title";
 		input.value = q;
 		scope.value = searchScope;
 		if (restoreSearchFocus) {
@@ -98,10 +99,10 @@ pageFeature((lifecycle) => {
 			status.hidden = true;
 		}
 		if (!lifecycle.active || token !== revision) return;
-		const category = params.get("type") || "",
-			tags = params.getAll("tag"),
-			moods = params.getAll("mood"),
-			date = params.get("date") || "";
+		const category = params.get("type") || "";
+		const tags = params.getAll("tag");
+		const moods = params.getAll("mood");
+		const date = params.get("date") || "";
 		const filtered = data.filter(
 			(post) =>
 				matchesPost(post, { q, scope: searchScope, category, tags, moods }) &&
@@ -121,8 +122,8 @@ pageFeature((lifecycle) => {
 			document.querySelectorAll<HTMLElement>(selector).forEach((el) => {
 				el.hidden = !visible.has(el.dataset.postId!);
 				if (el.hidden) return;
-				const key = el.dataset.month || el.dataset.year!,
-					heading = el.querySelector<HTMLElement>("h2")!;
+				const key = el.dataset.month || el.dataset.year!;
+				const heading = el.querySelector<HTMLElement>("h2")!;
 				heading.hidden = selector === ".timeline-entry" && group === key;
 				heading.classList.toggle("group-repeat", group === key);
 				group = key;
@@ -146,7 +147,7 @@ pageFeature((lifecycle) => {
 						searchScope === "full" && q.trim()
 							? (sections[post.slug]?.sections || [])
 									.filter((section) =>
-										excerpt(section.title + " " + section.text, q),
+										excerpt(`${section.title} ${section.text}`, q),
 									)
 									.slice(0, 2)
 							: [];
@@ -156,7 +157,7 @@ pageFeature((lifecycle) => {
 						link.className = "section-result";
 						link.href =
 							post.href +
-							(section.anchor ? "#" + encodeURIComponent(section.anchor) : "");
+							(section.anchor ? `#${encodeURIComponent(section.anchor)}` : "");
 						const heading = document.createElement("strong");
 						highlight(heading, section.title || post.title, q);
 						const snippet = document.createElement("span");
@@ -204,8 +205,8 @@ pageFeature((lifecycle) => {
 			chips.append(button);
 		}
 		chips.hidden = !chips.childElementCount;
-		const commits = records.filter((r: any) => r.date === date),
-			box = document.querySelector<HTMLElement>("#date-commits")!;
+		const commits = records.filter((r: any) => r.date === date);
+		const box = document.querySelector<HTMLElement>("#date-commits")!;
 		box.hidden = !date || !commits.length;
 		const list = box.querySelector("div")!;
 		list.replaceChildren();

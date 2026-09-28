@@ -1,5 +1,6 @@
-import { pageFeature } from "./core/page-scope";
 import { t } from "../utils/roxy-i18n";
+import { pageFeature } from "./core/page-scope";
+
 // ClientRouter retains this module; a full reload deliberately starts unfocused.
 let focused = false;
 export function preserveReadingPosition() {
@@ -24,9 +25,9 @@ pageFeature((scope) => {
 	);
 	const sidebar = document.querySelector<HTMLElement>("#left-sidebar")!;
 	const desktop = matchMedia("(min-width:1101px)");
-	let toc = false,
-		width = 960,
-		drawerFocus: HTMLElement | null = null;
+	let toc = false;
+	let width = 960;
+	let drawerFocus: HTMLElement | null = null;
 	try {
 		const saved = Number(localStorage.getItem("roxy-focus-width"));
 		if (saved >= 480 && saved <= 1440) width = saved;
@@ -63,7 +64,7 @@ pageFeature((scope) => {
 		const restore = preserve ? preserveReadingPosition() : () => {};
 		root.dataset.focus = String(active());
 		root.dataset.focusToc = String(active() && toc && desktop.matches);
-		root.style.setProperty("--focus-width", width + "px");
+		root.style.setProperty("--focus-width", `${width}px`);
 		const drawerOpen = !!article && toc && !desktop.matches;
 		sidebar.classList.toggle("toc-drawer", drawerOpen);
 		if (drawerOpen) {
@@ -83,17 +84,17 @@ pageFeature((scope) => {
 			});
 		document
 			.querySelectorAll<HTMLElement>("[data-toc-toggle]")
-			.forEach((button) =>
+			.forEach((button) => {
 				button.setAttribute(
 					"aria-expanded",
 					String(toc || (!active() && desktop.matches)),
-				),
-			);
+				);
+			});
 		const slider = document.querySelector<HTMLInputElement>("#focus-width");
 		if (slider) slider.value = String(width);
 		const output =
 			document.querySelector<HTMLOutputElement>("#focus-width-value");
-		if (output) output.value = width + "px";
+		if (output) output.value = `${width}px`;
 		lockBackground();
 		restore();
 		window.dispatchEvent(new Event("roxy:focus"));

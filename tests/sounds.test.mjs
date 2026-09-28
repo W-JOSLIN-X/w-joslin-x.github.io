@@ -1,8 +1,9 @@
-import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import test from "node:test";
 import { normalizeEffects } from "../src/utils/roxy-personalization.mjs";
+
 test("old sounds migrate while preserving volume and switch", () => {
 	for (const [old, id] of [
 		["tap", "mechanical"],

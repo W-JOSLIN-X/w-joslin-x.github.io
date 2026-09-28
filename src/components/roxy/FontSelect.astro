@@ -1,6 +1,7 @@
 ---
-import { fonts } from '../../config/roxy-fonts';
-import T from './Text.astro';
+import { fonts } from "../../config/roxy-fonts";
+import T from "./Text.astro";
+
 const { article = false } = Astro.props;
 ---
 <label class="font-choice"><T k="fontFamily"/><select id={article?'article-font':'global-font'}>

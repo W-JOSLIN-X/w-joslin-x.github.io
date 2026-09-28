@@ -68,17 +68,17 @@ export function shouldEnterScreensaver({
 	);
 }
 
-export function hexToHsl(hex) {
-	const rgb = /^#[\da-f]{6}$/i.test(hex) ? hex : "#8a72ee";
+export function hexToHsl(hex, rounded = true) {
+	const rgb = /^#[\da-f]{6}$/i.test(hex) ? hex : defaults.appearance.color;
 	const [r, g, b] = [1, 3, 5].map(
-		(i) => parseInt(rgb.slice(i, i + 2), 16) / 255,
+		(i) => Number.parseInt(rgb.slice(i, i + 2), 16) / 255,
 	);
-	const max = Math.max(r, g, b),
-		min = Math.min(r, g, b),
-		d = max - min,
-		l = (max + min) / 2;
-	let h = 250,
-		s = 0;
+	const max = Math.max(r, g, b);
+	const min = Math.min(r, g, b);
+	const d = max - min;
+	const l = (max + min) / 2;
+	let h = 250;
+	let s = 0;
 	if (d) {
 		s = d / (1 - Math.abs(2 * l - 1));
 		h =
@@ -90,19 +90,21 @@ export function hexToHsl(hex) {
 		h *= 60;
 	}
 	return {
-		hue: Math.round(h),
-		saturation: Math.round(s * 100),
-		lightness: Math.round(l * 100),
+		hue: rounded ? Math.round(h) : h,
+		saturation: rounded ? Math.round(s * 100) : s * 100,
+		lightness: rounded ? Math.round(l * 100) : l * 100,
 	};
 }
 
 export function hslToHex(h, s, l) {
-	s /= 100;
-	l /= 100;
-	const a = s * Math.min(l, 1 - l);
+	const saturation = s / 100;
+	const lightness = l / 100;
+	const a = saturation * Math.min(lightness, 1 - lightness);
 	const f = (n) => {
 		const k = (n + h / 30) % 12;
-		return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))))
+		return Math.round(
+			255 * (lightness - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))),
+		)
 			.toString(16)
 			.padStart(2, "0");
 	};

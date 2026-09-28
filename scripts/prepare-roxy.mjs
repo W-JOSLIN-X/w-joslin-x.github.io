@@ -1,13 +1,14 @@
-import fs from "node:fs";
-import { defaults, validateDefaults } from "../src/utils/roxy-defaults.mjs";
-import path from "node:path";
 import { createHash } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import matter from "gray-matter";
 import sharp from "sharp";
-import { loadLibrary, resource } from "./lib/library.mjs";
+import { assertPublicContent } from "../src/utils/content-policy.mjs";
+import { defaults, validateDefaults } from "../src/utils/roxy-defaults.mjs";
 import { contentHistory } from "./lib/history.mjs";
+import { loadLibrary, resource } from "./lib/library.mjs";
+import { rewriteImageReferences } from "./lib/markdown-resources.mjs";
 import { zip } from "./lib/zip.mjs";
-import { imageReferences } from "./lib/markdown-resources.mjs";
 
 const generated = path.resolve(".generated");
 validateDefaults(defaults);
@@ -25,7 +26,7 @@ const write = (file, data) => {
 	fs.writeFileSync(file, data);
 };
 const json = (name, value) =>
-	write(path.join(generated, name), JSON.stringify(value, null, 2) + "\n");
+	write(path.join(generated, name), `${JSON.stringify(value, null, 2)}\n`);
 const walk = (dir) =>
 	fs
 		.readdirSync(dir, { withFileTypes: true })
@@ -115,13 +116,14 @@ json("library.json", {
 });
 
 const base = path.resolve("content/posts");
-const manifest = {},
-	published = new Set();
+const manifest = {};
+const published = new Set();
 for (const file of walk(base).filter((p) =>
 	/^[^/]+\/index\.(md|mdx)$/.test(path.relative(base, p).replaceAll("\\", "/")),
 )) {
-	const raw = fs.readFileSync(file, "utf8"),
-		{ data, content } = matter(raw);
+	const raw = fs.readFileSync(file, "utf8");
+	const { data, content } = matter(raw);
+	assertPublicContent(data, file);
 	if (
 		typeof data.title !== "string" ||
 		!data.title.trim() ||
@@ -147,13 +149,12 @@ for (const file of walk(base).filter((p) =>
 	if (published.has(slug)) throw Error(`Duplicate article URL: ${slug}`);
 	published.add(slug);
 	const flat = slug.replaceAll("/", "--");
-	let rewritten = raw;
 	const images = new Map();
-	for (const { full, src } of imageReferences(content)) {
-		if (/^(https?:|data:|\/\/)/.test(src)) continue;
+	const rewrittenContent = rewriteImageReferences(content, (src) => {
+		if (/^(https?:|data:|\/\/)/.test(src)) return src;
 		const decoded = decodeURIComponent(src.split(/[?#]/)[0]);
 		const target = src.startsWith("/")
-			? path.resolve(output, "." + decoded)
+			? path.resolve(output, `.${decoded}`)
 			: path.resolve(path.dirname(file), decoded);
 		if (
 			![base, output].some((root) => target.startsWith(root + path.sep)) ||
@@ -162,8 +163,10 @@ for (const file of walk(base).filter((p) =>
 			throw Error(`${file}: missing or invalid image ${src}`);
 		if (!images.has(target))
 			images.set(target, `images/${images.size + 1}-${path.basename(target)}`);
-		rewritten = rewritten.replace(full, full.replace(src, images.get(target)));
-	}
+		return images.get(target);
+	});
+	const rewritten =
+		raw.slice(0, raw.length - content.length) + rewrittenContent;
 	const localImages = path.join(path.dirname(file), "images");
 	if (fs.existsSync(localImages))
 		for (const asset of walk(localImages).filter(

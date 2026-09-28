@@ -78,9 +78,9 @@ export const fonts = [
 export type FontId = (typeof fonts)[number]["id"];
 export function fontStack(id: string, lang: string) {
 	const font = fonts.find((f) => f.id === id) || fonts[0];
-	return (
+	return `${
 		font.families[
 			lang.startsWith("ja") ? "ja" : lang.startsWith("en") ? "en" : "zh"
-		] + ",sans-serif"
-	);
+		]
+	},sans-serif`;
 }

@@ -10,8 +10,8 @@ function matchingRanges(text, query) {
 				.filter(Boolean),
 		),
 	];
-	let normalized = "",
-		offset = 0;
+	let normalized = "";
+	let offset = 0;
 	const positions = [];
 	for (const character of text) {
 		const part = character.normalize("NFKC").toLocaleLowerCase();
@@ -22,9 +22,10 @@ function matchingRanges(text, query) {
 	}
 	const ranges = [];
 	for (const term of terms) {
-		let from = 0,
-			index;
-		while ((index = normalized.indexOf(term, from)) >= 0) {
+		let from = 0;
+		while (from < normalized.length) {
+			const index = normalized.indexOf(term, from);
+			if (index < 0) break;
 			ranges.push([positions[index][0], positions[index + term.length - 1][1]]);
 			from = index + term.length;
 		}
@@ -38,11 +39,11 @@ function matchingRanges(text, query) {
 	return merged;
 }
 export function excerpt(text, query, radius = 70) {
-	const clean = text.replace(/\s+/g, " ").trim(),
-		range = matchingRanges(clean, query)[0];
+	const clean = text.replace(/\s+/g, " ").trim();
+	const range = matchingRanges(clean, query)[0];
 	if (!range) return "";
-	const start = Math.max(0, range[0] - radius),
-		end = Math.min(clean.length, range[1] + radius);
+	const start = Math.max(0, range[0] - radius);
+	const end = Math.min(clean.length, range[1] + radius);
 	return `${start ? "…" : ""}${clean.slice(start, end)}${end < clean.length ? "…" : ""}`;
 }
 // Plain segments: callers create text nodes and <mark>, never interpret HTML.

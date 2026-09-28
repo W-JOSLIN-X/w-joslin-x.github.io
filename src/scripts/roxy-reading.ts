@@ -1,5 +1,5 @@
-import { pageFeature } from "./core/page-scope";
 import { t } from "../utils/roxy-i18n";
+import { pageFeature } from "./core/page-scope";
 
 let traversing = false;
 document.addEventListener("astro:before-preparation", (event: any) => {
@@ -160,10 +160,10 @@ pageFeature((scope) => {
 	scope.on(window, "pagehide", record);
 	scope.defer(record);
 
-	const viewer = $<HTMLDialogElement>("#image-viewer"),
-		image = viewer.querySelector("img")!;
-	let focus: HTMLElement | null = null,
-		overflow = "";
+	const viewer = $<HTMLDialogElement>("#image-viewer");
+	const image = viewer.querySelector("img")!;
+	let focus: HTMLElement | null = null;
+	let overflow = "";
 	function openImage(target: HTMLImageElement) {
 		focus = target;
 		overflow = document.body.style.overflow;
@@ -176,8 +176,13 @@ pageFeature((scope) => {
 	prose.querySelectorAll("img").forEach((img) => {
 		img.tabIndex = 0;
 		img.setAttribute("role", "button");
-		img.setAttribute("aria-label", `${t("imagePreview")} ${img.alt}`);
 	});
+	const localizeImages = () => {
+		for (const img of prose.querySelectorAll("img"))
+			img.setAttribute("aria-label", `${t("imagePreview")} ${img.alt}`);
+	};
+	localizeImages();
+	scope.on(window, "roxy:language", localizeImages);
 	scope.on(prose, "click", (event) => {
 		if (event.target instanceof HTMLImageElement) {
 			event.preventDefault();

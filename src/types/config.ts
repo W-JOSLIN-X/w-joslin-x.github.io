@@ -32,19 +32,6 @@ export interface SiteConfig {
 		fixed: boolean;
 	};
 
-	// 特色页面开关配置
-	featurePages: {
-		anime: boolean; // 番剧页面开关
-		diary: boolean; // 日记页面开关
-		friends: boolean; // 友链页面开关
-		projects: boolean; // 项目页面开关
-		skills: boolean; // 技能页面开关
-		timeline: boolean; // 时间线页面开关
-		albums: boolean; // 相册页面开关
-		devices: boolean; // 设备页面开关
-		aiTools: boolean; // AI 工具页面开关
-	};
-
 	// 文章列表布局配置
 	postListLayout: {
 		defaultMode: "list" | "grid"; // 默认布局模式：list=列表模式，grid=网格模式
@@ -78,28 +65,6 @@ export interface SiteConfig {
 	font?: {
 		mode?: "custom" | "system"; // custom=加载 ZenMaruGothic、Loli 和 JetBrains Mono；system=不请求自定义字体
 	};
-
-	// 添加bangumi配置
-	bangumi?: {
-		userId?: string; // Bangumi用户ID
-		fetchOnDev?: boolean;
-	};
-
-	// 添加bilibili配置
-	bilibili?: {
-		vmid?: string; // Bilibili用户ID (vmid)
-		fetchOnDev?: boolean; // 是否在开发环境下获取 Bilibili 数据
-		coverMirror?: string; // 封面图片镜像源（可选，默认为空字符串）
-		useWebp?: boolean; // 是否使用WebP格式（默认 true）
-	};
-
-	// 添加番剧页面配置
-	anime?: {
-		mode?: "bangumi" | "local" | "bilibili"; // 番剧页面模式
-	};
-
-	// 日记页面 Memos API 地址，客户端 fetch 获取动态数据
-	diaryApiUrl?: string;
 
 	// 标签样式配置
 	tagStyle?: {

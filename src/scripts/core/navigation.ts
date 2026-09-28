@@ -2,14 +2,14 @@ import { navigate } from "astro:transitions/client";
 
 // Router-owned history maintains scroll/index state; never overwrite it with pushState(null).
 export function filterNavigation(params: URLSearchParams) {
-	return navigate(`/browse/${params.size ? "?" + params : ""}`, {
+	return navigate(`/browse/${params.size ? `?${params}` : ""}`, {
 		history: "push",
 	});
 }
 
 document.addEventListener("astro:before-swap", (event: any) => {
-	const from = document.documentElement,
-		to = event.newDocument.documentElement;
+	const from = document.documentElement;
+	const to = event.newDocument.documentElement;
 	for (const name of [
 		"mode",
 		"theme",

@@ -1,7 +1,8 @@
+import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import assert from "node:assert/strict";
 import { parse } from "node-html-parser";
+
 const root = path.resolve("dist");
 function walk(dir) {
 	return fs
@@ -86,7 +87,7 @@ for (const record of Object.values(search)) {
 		sectionsChecked++;
 	}
 	const preview = JSON.parse(
-		fs.readFileSync(path.join(root, "previews", record.slug + ".json"), "utf8"),
+		fs.readFileSync(path.join(root, "previews", `${record.slug}.json`), "utf8"),
 	);
 	assert.equal(preview.title, record.title);
 	assert.ok(preview.sections.every((section) => section.text.length <= 400));

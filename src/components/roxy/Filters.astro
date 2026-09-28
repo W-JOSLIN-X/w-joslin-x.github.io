@@ -1,6 +1,7 @@
 ---
 import { posts } from "../../utils/roxy";
 import T from "./Text.astro";
+
 const all = await posts();
 const categories = [
 	...new Set(all.map((p) => p.data.category).filter(Boolean)),

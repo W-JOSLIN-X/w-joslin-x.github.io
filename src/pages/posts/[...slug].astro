@@ -1,21 +1,21 @@
 ---
-import { rankRelated } from "../../utils/roxy-personalization.mjs";
-import ReadingControls from "../../components/roxy/ReadingControls.astro";
 import { render } from "astro:content";
-import RoxyLayout from "../../layouts/RoxyLayout.astro";
-import Icon from "../../components/roxy/Icon.astro";
-import T from "../../components/roxy/Text.astro";
-import MermaidManager from "../../components/features/markdown/MermaidManager.astro";
-import {
-	posts,
-	slugOf,
-	postHref,
-	day,
-	wordCount,
-	referencesTo,
-} from "../../utils/roxy";
-import { roxy } from "../../config/roxy";
 import downloads from "../../../.generated/downloads.json";
+import MermaidManager from "../../components/features/markdown/MermaidManager.astro";
+import Icon from "../../components/roxy/Icon.astro";
+import ReadingControls from "../../components/roxy/ReadingControls.astro";
+import T from "../../components/roxy/Text.astro";
+import { roxy } from "../../config/roxy";
+import RoxyLayout from "../../layouts/RoxyLayout.astro";
+import {
+	day,
+	postHref,
+	posts,
+	referencesTo,
+	slugOf,
+	wordCount,
+} from "../../utils/roxy";
+import { rankRelated } from "../../utils/roxy-personalization.mjs";
 export async function getStaticPaths() {
 	return (await posts()).map((entry) => ({
 		params: { slug: slugOf(entry.id) },
@@ -24,12 +24,20 @@ export async function getStaticPaths() {
 }
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
-headings.forEach((h) => (h.text = h.text.replace(/#$/, "")));
+headings.forEach((h) => {
+	h.text = h.text.replace(/#$/, "");
+});
 const all = await posts();
 const backlinks = all.filter(
 	(p) => p.id !== entry.id && referencesTo(p.body || "", p.id, entry.id),
 );
-const related: typeof all = rankRelated(all, entry, (p: typeof all[number]) => referencesTo(entry.body || '', entry.id, p.id) || referencesTo(p.body || '', p.id, entry.id));
+const related: typeof all = rankRelated(
+	all,
+	entry,
+	(p: (typeof all)[number]) =>
+		referencesTo(entry.body || "", entry.id, p.id) ||
+		referencesTo(p.body || "", p.id, entry.id),
+);
 const index = all.findIndex((p) => p.id === entry.id);
 const download = (
 	downloads as Record<string, { file: string; source: string }>

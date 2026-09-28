@@ -1,14 +1,14 @@
-import { confirmSettings, showExport } from "./settings-dialogs";
+import { defaultBackgrounds, gallery } from "../config/roxy-gallery";
 import { exportCatalog } from "../utils/roxy-defaults.mjs";
-import { gallery, defaultBackgrounds } from "../config/roxy-gallery";
+import { t } from "../utils/roxy-i18n";
 import {
-	normalizeSlideshow,
 	nextImage,
+	normalizeSlideshow,
 	shouldEnterScreensaver,
 } from "../utils/roxy-slideshow.mjs";
-import { t } from "../utils/roxy-i18n";
-
 import { pageFeature } from "./core/page-scope";
+import { confirmSettings, showExport } from "./settings-dialogs";
+
 let retainedCurrent = "";
 let retainedInput = Date.now();
 pageFeature((scope) => {
@@ -184,6 +184,7 @@ pageFeature((scope) => {
 	scope.on(window, "roxy:focus", () => {
 		if (document.documentElement.dataset.focus === "true" && !saver.open)
 			++revision;
+		else if (!saver.open && !staticBackground) void paint(current);
 		sync();
 		schedule();
 	});
@@ -235,21 +236,24 @@ pageFeature((scope) => {
 			change();
 		};
 	}
-	document.querySelectorAll<HTMLButtonElement>("[data-slide-prev]").forEach(
-		(b) =>
-			(b.onclick = () => {
+	document
+		.querySelectorAll<HTMLButtonElement>("[data-slide-prev]")
+		.forEach((b) => {
+			b.onclick = () => {
 				void step(-1);
-			}),
-	);
-	document.querySelectorAll<HTMLButtonElement>("[data-slide-next]").forEach(
-		(b) =>
-			(b.onclick = () => {
+			};
+		});
+	document
+		.querySelectorAll<HTMLButtonElement>("[data-slide-next]")
+		.forEach((b) => {
+			b.onclick = () => {
 				void step(1);
-			}),
-	);
-	document.querySelectorAll<HTMLButtonElement>("[data-slide-pause]").forEach(
-		(b) =>
-			(b.onclick = () => {
+			};
+		});
+	document
+		.querySelectorAll<HTMLButtonElement>("[data-slide-pause]")
+		.forEach((b) => {
+			b.onclick = () => {
 				if (saver.open) {
 					saverEnabled = !saverEnabled;
 					sync();
@@ -259,8 +263,8 @@ pageFeature((scope) => {
 				if (focusLocked()) return;
 				prefs.enabled = !prefs.enabled;
 				change();
-			}),
-	);
+			};
+		});
 
 	let controlsTimer: number | undefined;
 	let returnFocus: HTMLElement | null = null;
@@ -293,7 +297,9 @@ pageFeature((scope) => {
 	}
 	document
 		.querySelectorAll<HTMLButtonElement>("[data-saver-open]")
-		.forEach((b) => (b.onclick = enterScreensaver));
+		.forEach((b) => {
+			b.onclick = enterScreensaver;
+		});
 	$("#screensaver-close").onclick = () => saver.close();
 	saver.addEventListener("close", () => {
 		++revision;
@@ -419,8 +425,8 @@ pageFeature((scope) => {
 		);
 		if (!button) return;
 		const id = button.closest<HTMLElement>("[data-image-id]")!.dataset.imageId!;
-		const index = prefs.selected.indexOf(id),
-			next = index + Number(button.dataset.move);
+		const index = prefs.selected.indexOf(id);
+		const next = index + Number(button.dataset.move);
 		if (index < 0 || next < 0 || next >= prefs.selected.length) return;
 		[prefs.selected[index], prefs.selected[next]] = [
 			prefs.selected[next],
@@ -455,7 +461,7 @@ pageFeature((scope) => {
 			);
 			showExport(
 				"defaultBackgrounds:\n" +
-					prefs.selected.map((id: string) => "  - " + id).join("\n"),
+					prefs.selected.map((id: string) => `  - ${id}`).join("\n"),
 				complete,
 				"content/catalog.yaml",
 			);

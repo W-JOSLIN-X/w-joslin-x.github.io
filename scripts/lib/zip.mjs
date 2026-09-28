@@ -9,8 +9,8 @@ function crc32(buffer) {
 // ZIP store mode: UTF-8 filenames, deterministic bytes, no shell or extra runtime.
 export function zip(entries) {
 	let offset = 0;
-	const body = [],
-		central = [];
+	const body = [];
+	const central = [];
 	for (const [name, data] of entries) {
 		const n = Buffer.from(name);
 		const header = Buffer.alloc(30);
@@ -37,8 +37,8 @@ export function zip(entries) {
 		central.push(c, n);
 		offset += header.length + n.length + data.length;
 	}
-	const cd = Buffer.concat(central),
-		end = Buffer.alloc(22);
+	const cd = Buffer.concat(central);
+	const end = Buffer.alloc(22);
 	end.writeUInt32LE(0x06054b50);
 	end.writeUInt16LE(entries.length, 8);
 	end.writeUInt16LE(entries.length, 10);

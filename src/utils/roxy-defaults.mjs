@@ -1,5 +1,7 @@
 import defaults from "../config/roxy-defaults.json" with { type: "json" };
+
 export { defaults };
+
 const choices = {
 	theme: ["light", "dark"],
 	layout: ["list", "grid"],
@@ -144,7 +146,8 @@ export function exportDefaults(group, values) {
 export function exportCatalog(source, selected, validIds) {
 	const ids = [...new Set(selected)].filter((id) => validIds.includes(id));
 	if (!ids.length) throw new Error("Select at least one image");
-	const block = /^defaultBackgrounds:[^\r\n]*\r?\n(?:[ \t]+[^\r\n]*\r?\n)*/m;
+	const block =
+		/^defaultBackgrounds:[^\r\n]*(?:\r?\n|$)(?:[ \t]+[^\r\n]*(?:\r?\n|$))*/m;
 	if (!block.test(source)) throw new Error("Missing defaultBackgrounds");
 	const eol = source.includes("\r\n") ? "\r\n" : "\n";
 	return source.replace(

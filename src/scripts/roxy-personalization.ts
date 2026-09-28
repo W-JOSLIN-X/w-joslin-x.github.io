@@ -1,8 +1,8 @@
+import { fontStack, fonts } from "../config/roxy-fonts";
 import { defaults } from "../utils/roxy-defaults.mjs";
-import { pageFeature } from "./core/page-scope";
-import { fonts, fontStack } from "../config/roxy-fonts";
-import { effectiveFont, fontId } from "../utils/roxy-personalization.mjs";
 import { language } from "../utils/roxy-i18n";
+import { effectiveFont, fontId } from "../utils/roxy-personalization.mjs";
+import { pageFeature } from "./core/page-scope";
 
 const key = "roxy-fonts-v1";
 
@@ -28,8 +28,8 @@ function anchorPosition() {
 		),
 	];
 	const element = nodes.find((e) => e.getBoundingClientRect().bottom > 95);
-	const offset = element?.getBoundingClientRect().top,
-		start = scrollY;
+	const offset = element?.getBoundingClientRect().top;
+	const start = scrollY;
 	return () => {
 		if (element?.isConnected && offset != null && Math.abs(scrollY - start) < 4)
 			scrollBy(0, element.getBoundingClientRect().top - offset);
@@ -39,8 +39,8 @@ pageFeature((scope) => {
 	const root = document.documentElement;
 	const articleId = document.body.dataset.articleId || "";
 	const articleLang = document.body.dataset.articleLang || "zh-CN";
-	let prefs = read(),
-		revision = 0;
+	const prefs = read();
+	let revision = 0;
 	const globalSelect =
 		document.querySelector<HTMLSelectElement>("#global-font")!;
 	const articleSelect =
@@ -56,13 +56,13 @@ pageFeature((scope) => {
 		);
 		if (existing?.sheet) return;
 		if (existing) existing.remove();
-		let href = `/fonts/${name}.css`;
+		const href = `/fonts/${name}.css`;
 		if (retryToken) {
-			const response = await fetch(href + "?retry=" + retryToken);
+			const response = await fetch(`${href}?retry=${retryToken}`);
 			if (!response.ok) throw Error("Font unavailable");
 			const css = (await response.text()).replace(
 				/(\/fonts\/[^"')\s]+\.woff2)/g,
-				"$1?retry=" + retryToken,
+				`$1?retry=${retryToken}`,
 			);
 			if (!scope.active) return;
 			const style = document.createElement("style");
@@ -93,8 +93,8 @@ pageFeature((scope) => {
 		});
 	}
 	async function applyFonts(preserve = false) {
-		const token = ++revision,
-			restore = preserve ? anchorPosition() : () => {};
+		const token = ++revision;
+		const restore = preserve ? anchorPosition() : () => {};
 		const selected = effectiveFont(prefs.global, prefs.articles[articleId]);
 		globalSelect.value = prefs.global;
 		if (articleSelect)
@@ -110,13 +110,15 @@ pageFeature((scope) => {
 			.forEach((el) => {
 				const id =
 					el.dataset.fontSample === "article" ? selected : prefs.global;
-				el.querySelectorAll<HTMLElement>("[lang]").forEach(
-					(span) => (span.style.fontFamily = fontStack(id, span.lang)),
-				);
+				el.querySelectorAll<HTMLElement>("[lang]").forEach((span) => {
+					span.style.fontFamily = fontStack(id, span.lang);
+				});
 			});
 		document
 			.querySelectorAll<HTMLElement>("[data-font-retry]")
-			.forEach((el) => (el.hidden = true));
+			.forEach((el) => {
+				el.hidden = true;
+			});
 		const ids = new Set([prefs.global, ...(articleId ? [selected] : [])]);
 		const sheets = new Set(
 			[...ids].flatMap((id) => [
@@ -134,13 +136,17 @@ pageFeature((scope) => {
 				throw Error("Font failed");
 			document
 				.querySelectorAll<HTMLElement>("[data-font-retry]")
-				.forEach((el) => (el.hidden = true));
+				.forEach((el) => {
+					el.hidden = true;
+				});
 			restore();
 		} catch {
 			if (scope.active && token === revision)
 				document
 					.querySelectorAll<HTMLElement>("[data-font-retry]")
-					.forEach((el) => (el.hidden = false));
+					.forEach((el) => {
+						el.hidden = false;
+					});
 		}
 	}
 	globalSelect.onchange = () => {
@@ -155,20 +161,21 @@ pageFeature((scope) => {
 			persist();
 			void applyFonts(true);
 		};
-	document.querySelectorAll<HTMLButtonElement>("[data-font-retry]").forEach(
-		(b) =>
-			(b.onclick = () => {
+	document
+		.querySelectorAll<HTMLButtonElement>("[data-font-retry]")
+		.forEach((b) => {
+			b.onclick = () => {
 				// Discard failed faces/styles so the next request is an actual retry.
-				document
-					.querySelectorAll("[data-font-sheet]")
-					.forEach((e) => e.remove());
+				document.querySelectorAll("[data-font-sheet]").forEach((e) => {
+					e.remove();
+				});
 				retryToken = String(Date.now());
 				try {
 					localStorage.setItem("roxy-font-resource-revision", retryToken);
 				} catch {}
 				void applyFonts(true);
-			}),
-	);
+			};
+		});
 	scope.on(window, "roxy:language", () => void applyFonts());
 	scope.on(window, "roxy:reset-group", (e: CustomEvent) => {
 		if (["appearance", "all"].includes(e.detail)) {
@@ -180,7 +187,9 @@ pageFeature((scope) => {
 	scope.on(document.fonts, "loadingerror", () =>
 		document
 			.querySelectorAll<HTMLElement>("[data-font-retry]")
-			.forEach((el) => (el.hidden = false)),
+			.forEach((el) => {
+				el.hidden = false;
+			}),
 	);
 	void applyFonts();
 
@@ -196,7 +205,9 @@ pageFeature((scope) => {
 		});
 		document
 			.querySelectorAll<HTMLElement>("[data-appearance-panel]")
-			.forEach((p) => (p.hidden = p.dataset.appearancePanel !== id));
+			.forEach((p) => {
+				p.hidden = p.dataset.appearancePanel !== id;
+			});
 	}
 	tabs.forEach((b, i) => {
 		b.onclick = () => activate(b.dataset.appearanceTab!);

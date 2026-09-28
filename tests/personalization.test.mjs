@@ -1,13 +1,13 @@
-import test from "node:test";
 import assert from "node:assert/strict";
+import test from "node:test";
+import { rehypeReadingIndex } from "../src/plugins/rehype-reading-index.mjs";
+import { matchesPost } from "../src/utils/roxy-filter.mjs";
 import {
 	effectiveFont,
 	normalizeEffects,
 	rankRelated,
 } from "../src/utils/roxy-personalization.mjs";
-import { rehypeReadingIndex } from "../src/plugins/rehype-reading-index.mjs";
 import { excerpt, highlightSegments } from "../src/utils/roxy-search.mjs";
-import { matchesPost } from "../src/utils/roxy-filter.mjs";
 
 test("multilingual chapter text remains searchable with normalized width and code terms", () => {
 	const post = {
@@ -34,8 +34,8 @@ test("article font override survives global changes; invalid and inherited value
 	assert.equal(effectiveFont("deleted-font", "deleted-font"), "original");
 });
 test("touch defaults, disabled audio, and corrupt persisted effects are safe", () => {
-	assert.equal(normalizeEffects({}, true).clickEnabled, false);
-	assert.equal(normalizeEffects({}, false).clickEnabled, true);
+	assert.equal(normalizeEffects({}).touchClickEnabled, false);
+	assert.equal(normalizeEffects({}).clickEnabled, true);
 	assert.equal(
 		normalizeEffects({ soundEnabled: true }, true).soundEnabled,
 		true,
@@ -48,6 +48,23 @@ test("touch defaults, disabled audio, and corrupt persisted effects are safe", (
 	assert.equal(prefs.volume, 100);
 	assert.equal(prefs.move, "stars");
 	assert.equal(prefs.soundEnabled, false);
+});
+test("device click preferences survive export and old single switches migrate", () => {
+	assert.equal(
+		normalizeEffects({ clickEnabled: true }).touchClickEnabled,
+		true,
+	);
+	assert.equal(
+		normalizeEffects({ clickEnabled: false }).touchClickEnabled,
+		false,
+	);
+	const prefs = normalizeEffects({
+		clickEnabled: false,
+		touchClickEnabled: true,
+	});
+	assert.equal(prefs.clickEnabled, false);
+	assert.equal(prefs.touchClickEnabled, true);
+	assert.deepEqual(normalizeEffects(prefs), prefs);
 });
 test("explicit references beat shared tags; ties preserve publication order, no unrelated padding", () => {
 	const post = (id, tags, published) => ({ id, data: { tags, published } });

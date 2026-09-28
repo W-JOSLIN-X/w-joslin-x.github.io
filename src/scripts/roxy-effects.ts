@@ -1,5 +1,6 @@
-import { pageFeature } from "./core/page-scope";
 import { normalizeEffects } from "../utils/roxy-personalization.mjs";
+import { pageFeature } from "./core/page-scope";
+
 let audio: AudioContext | undefined;
 const buffers = new Map<string, Promise<AudioBuffer>>();
 const sources = new Set<AudioBufferSourceNode>();
@@ -7,18 +8,23 @@ pageFeature((scope) => {
 	const touch = matchMedia("(hover: none), (pointer: coarse)");
 	const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 	const key = "roxy-effects-v1";
-	let saved;
+	let saved: unknown;
 	try {
 		saved = JSON.parse(localStorage.getItem(key) || "{}");
 	} catch {}
-	let prefs = normalizeEffects(saved, touch.matches);
+	let prefs = normalizeEffects(saved);
+	let soundRevision = 0;
+	const clickField = () =>
+		touch.matches ? "touchClickEnabled" : "clickEnabled";
 	const $ = <T extends HTMLElement>(id: string) =>
 		document.getElementById(id) as T;
 	const suppressed = () =>
+		!scope.active ||
 		document.hidden ||
 		document.documentElement.dataset.focus === "true" ||
 		!!document.querySelector("#screensaver[open]");
 	function save() {
+		++soundRevision;
 		try {
 			localStorage.setItem(key, JSON.stringify(prefs));
 		} catch {}
@@ -27,10 +33,10 @@ pageFeature((scope) => {
 		for (const kind of ["move", "click", "sound"] as const) {
 			$<HTMLSelectElement>(`effect-${kind}`).value = prefs[kind];
 			$<HTMLInputElement>(`effect-${kind}-enabled`).checked =
-				prefs[`${kind}Enabled` as const];
+				prefs[kind === "click" ? clickField() : (`${kind}Enabled` as const)];
 		}
 		$<HTMLInputElement>("effect-volume").value = String(prefs.volume);
-		$("effect-volume-value").textContent = prefs.volume + "%";
+		$("effect-volume-value").textContent = `${prefs.volume}%`;
 		$<HTMLInputElement>("effect-move-enabled").disabled = touch.matches;
 	}
 	for (const kind of ["move", "click", "sound"] as const) {
@@ -39,7 +45,9 @@ pageFeature((scope) => {
 			save();
 		};
 		$<HTMLInputElement>(`effect-${kind}-enabled`).onchange = (e) => {
-			prefs[`${kind}Enabled` as const] = (e.target as HTMLInputElement).checked;
+			prefs[kind === "click" ? clickField() : (`${kind}Enabled` as const)] = (
+				e.target as HTMLInputElement
+			).checked;
 			save();
 		};
 	}
@@ -58,10 +66,18 @@ pageFeature((scope) => {
 		)
 			return;
 		lastSound = performance.now();
+		const requestedAt = lastSound;
+		const revision = ++soundRevision;
+		const stale = () =>
+			suppressed() ||
+			revision !== soundRevision ||
+			prefs.volume === 0 ||
+			(!preview &&
+				(!prefs.soundEnabled || performance.now() - requestedAt > 500));
 		try {
 			audio ||= new AudioContext();
 			await audio.resume();
-			if (suppressed()) return;
+			if (stale()) return;
 			if (!buffers.has(soundId))
 				buffers.set(
 					soundId,
@@ -79,9 +95,9 @@ pageFeature((scope) => {
 				buffers.delete(soundId);
 				throw error;
 			}
-			if (suppressed()) return;
-			const source = audio.createBufferSource(),
-				gain = audio.createGain();
+			if (stale()) return;
+			const source = audio.createBufferSource();
+			const gain = audio.createGain();
 			source.buffer = buffer;
 			gain.gain.value = prefs.volume / 100;
 			source.connect(gain);
@@ -100,10 +116,9 @@ pageFeature((scope) => {
 	$("effect-preview").onclick = () => void sound(true);
 	document
 		.querySelectorAll<HTMLButtonElement>("[data-sound-preview]")
-		.forEach(
-			(button) =>
-				(button.onclick = () => void sound(true, button.dataset.soundPreview)),
-		);
+		.forEach((button) => {
+			button.onclick = () => void sound(true, button.dataset.soundPreview);
+		});
 	const layer = document.createElement("div");
 	layer.className = "effect-layer";
 	layer.setAttribute("aria-hidden", "true");
@@ -115,6 +130,8 @@ pageFeature((scope) => {
 		layer.replaceChildren();
 	};
 	scope.defer(() => {
+		++soundRevision;
+		for (const source of sources) source.stop();
 		clear();
 		layer.remove();
 	});
@@ -132,11 +149,11 @@ pageFeature((scope) => {
 						: kind === "petals"
 							? "❀"
 							: "";
-			dot.style.left = x + "px";
-			dot.style.top = y + "px";
+			dot.style.left = `${x}px`;
+			dot.style.top = `${y}px`;
 			layer.append(dot);
-			const angle = (i / count) * Math.PI * 2,
-				distance = moving ? 18 : 32 + Math.random() * 22;
+			const angle = (i / count) * Math.PI * 2;
+			const distance = moving ? 18 : 32 + Math.random() * 22;
 			const transform =
 				kind === "ripple"
 					? "translate(-50%,-50%) scale(3)"
@@ -158,9 +175,9 @@ pageFeature((scope) => {
 		}
 	}
 	let start:
-			| { x: number; y: number; dragged: boolean; excluded: boolean }
-			| undefined,
-		lastMove = 0;
+		| { x: number; y: number; dragged: boolean; excluded: boolean }
+		| undefined;
+	let lastMove = 0;
 	const excluded = (target: EventTarget | null) =>
 		target instanceof Element &&
 		!!target.closest(
@@ -217,7 +234,7 @@ pageFeature((scope) => {
 				down.excluded ||
 				Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8);
 		if (drag) return;
-		if (prefs.clickEnabled && e.detail > 0)
+		if (prefs[clickField()] && e.detail > 0)
 			particle(e.clientX, e.clientY, prefs.click);
 		const target = (e.target as Element).closest<HTMLElement>(
 			'button,a[href],[role="button"]',
@@ -232,13 +249,14 @@ pageFeature((scope) => {
 	for (const name of ["visibilitychange", "roxy:focus"])
 		scope.on(name === "visibilitychange" ? document : window, name, () => {
 			clear();
+			++soundRevision;
 			if (suppressed()) for (const source of sources) source.stop();
 		});
 	scope.on(reduced, "change", clear);
 	scope.on(touch, "change", sync);
 	scope.on(window, "roxy:reset-group", (e: CustomEvent) => {
 		if (["effects", "all"].includes(e.detail)) {
-			prefs = normalizeEffects({}, touch.matches);
+			prefs = normalizeEffects({});
 			save();
 			clear();
 			sync();

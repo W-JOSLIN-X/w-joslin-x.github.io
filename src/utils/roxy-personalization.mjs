@@ -1,4 +1,4 @@
-import { defaults, normalizeGroup } from "./roxy-defaults.mjs";
+import { normalizeGroup } from "./roxy-defaults.mjs";
 export const fontIds = [
 	"original",
 	"rounded",
@@ -13,19 +13,15 @@ export function fontId(value) {
 export function effectiveFont(global, article) {
 	return article && fontIds.includes(article) ? article : fontId(global);
 }
-export function effectDefaults(touch = false) {
-	const { touchClickEnabled, ...values } = defaults.effects;
-	return {
-		...values,
-		clickEnabled: touch ? touchClickEnabled : values.clickEnabled,
-	};
-}
-export function normalizeEffects(value, touch = false) {
+export function normalizeEffects(value) {
 	const clean = normalizeGroup("effects", value);
-	const { touchClickEnabled, ...base } = clean;
-	if (typeof value?.clickEnabled !== "boolean")
-		base.clickEnabled = touch ? touchClickEnabled : clean.clickEnabled;
-	return base;
+	// Older browsers saved one explicit switch for both device types.
+	if (
+		typeof value?.touchClickEnabled !== "boolean" &&
+		typeof value?.clickEnabled === "boolean"
+	)
+		clean.touchClickEnabled = value.clickEnabled;
+	return clean;
 }
 
 export function rankRelated(posts, current, isLinked) {

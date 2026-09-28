@@ -1,20 +1,23 @@
 ---
-import { appearanceDataset } from "../utils/roxy-defaults.mjs";
 import { ClientRouter } from "astro:transitions";
-import { roxy } from "../config/roxy";
-import { posts, day, wordCount } from "../utils/roxy";
-import Icon from "../components/roxy/Icon.astro";
-import T from "../components/roxy/Text.astro";
-import SlideshowSettings from "../components/roxy/SlideshowSettings.astro";
-import FontSelect from "../components/roxy/FontSelect.astro";
-import SettingsDialogs from "../components/roxy/SettingsDialogs.astro";
-import EffectsSettings from "../components/roxy/EffectsSettings.astro";
-import MusicPlayer from "../components/roxy/MusicPlayer.astro";
 import activity from "../../.generated/activity.json";
+import EffectsSettings from "../components/roxy/EffectsSettings.astro";
+import FontSelect from "../components/roxy/FontSelect.astro";
+import Icon from "../components/roxy/Icon.astro";
+import MusicPlayer from "../components/roxy/MusicPlayer.astro";
+import SettingsDialogs from "../components/roxy/SettingsDialogs.astro";
+import SlideshowSettings from "../components/roxy/SlideshowSettings.astro";
+import T from "../components/roxy/Text.astro";
+import { roxy } from "../config/roxy";
+import { day, posts, wordCount } from "../utils/roxy";
+import { hueGradient } from "../utils/roxy-colors.mjs";
+import { appearanceDataset } from "../utils/roxy-defaults.mjs";
+import { hexToHsl } from "../utils/roxy-slideshow.mjs";
 import "../styles/roxy.css";
 import "../styles/roxy-enhancements.css";
 import "../styles/roxy-personalization.css";
 import "katex/dist/katex.min.css";
+
 const {
 	title,
 	home = false,
@@ -23,6 +26,7 @@ const {
 	backgroundPosition = roxy.backgroundPosition,
 } = Astro.props;
 const published = appearanceDataset();
+const publishedColor = hexToHsl(published.color, false);
 const all = await posts();
 const words = all.reduce((n, p) => n + wordCount(p.body || ""), 0);
 const categories = new Set(all.map((p) => p.data.category).filter(Boolean))
@@ -39,27 +43,27 @@ const lastUpdate = all.length
 	: "";
 ---
 <!doctype html>
-<html lang={published.lang === "zh" ? "zh-CN" : published.lang} {...Object.fromEntries(Object.entries(published).map(([key,value])=>[`data-${key.replace(/[A-Z]/g,c=>"-"+c.toLowerCase())}`,value]))} data-waves={String(published.edge !== "none")}>
+<html style={`--accent:${published.color};--hue:${publishedColor.hue};--saturation:${publishedColor.saturation}%`} lang={published.lang === "zh" ? "zh-CN" : published.lang} {...Object.fromEntries(Object.entries(published).map(([key,value])=>[`data-${key.replace(/[A-Z]/g,c=>"-"+c.toLowerCase())}`,value]))} data-waves={String(published.edge !== "none")}>
 <head>
 <ClientRouter/>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="description" content={title?`${title} · ${roxy.title}`:roxy.subtitle}/>
 <title>{title?`${title} · ${roxy.title}`:roxy.title}</title><link rel="icon" href={roxy.avatar}/>
 <link rel="preload" as="image" href={background} fetchpriority="high"/>
-<script is:inline define:vars={{publishedDefaults: appearanceDataset()}}>try{const root=document.documentElement;const saved=JSON.parse(localStorage.getItem('roxy-appearance-v3')||localStorage.getItem('roxy-appearance-v2')||'{}');const s={...publishedDefaults,...saved};if(!/^#[\da-f]{6}$/i.test(saved.color||'')&&Number.isFinite(saved.hue)){const h=((saved.hue%360)+360)%360;const f=n=>{const k=(n+h/30)%12;return Math.round(255*(.69-.2418*Math.max(-1,Math.min(k-3,9-k,1)))).toString(16).padStart(2,'0')};s.color='#'+f(0)+f(8)+f(4);}if(saved.edge==null&&saved.waves!=null)s.edge=String(saved.waves)==='true'?'soft':'none';for(const k of Object.keys(publishedDefaults))root.dataset[k]=s[k];root.dataset.waves=String(s.edge!=='none');const value=Math.max(0,Math.min(100,Number(s.overlayTransparency)));root.style.setProperty('--overlay-panel-opacity',`${100-value}%`);root.lang={zh:'zh-CN',en:'en',ja:'ja'}[s.lang]||'zh-CN'}catch{Object.assign(document.documentElement.dataset,publishedDefaults)}</script>
+<script is:inline define:vars={{publishedDefaults: appearanceDataset()}}>try{const root=document.documentElement;const saved=JSON.parse(localStorage.getItem('roxy-appearance-v3')||localStorage.getItem('roxy-appearance-v2')||'{}');const s={...publishedDefaults,...saved};if(!/^#[\da-f]{6}$/i.test(saved.color||'')&&Number.isFinite(saved.hue)){const h=((saved.hue%360)+360)%360;const f=n=>{const k=(n+h/30)%12;return Math.round(255*(.69-.2418*Math.max(-1,Math.min(k-3,9-k,1)))).toString(16).padStart(2,'0')};s.color='#'+f(0)+f(8)+f(4);}if(saved.edge==null&&saved.waves!=null)s.edge=String(saved.waves)==='true'?'soft':'none';for(const k of Object.keys(publishedDefaults))root.dataset[k]=s[k];root.dataset.waves=String(s.edge!=='none');if(/^#[\da-f]{6}$/i.test(s.color))root.style.setProperty('--accent',s.color);if(Number.isFinite(saved.hue))root.style.setProperty('--hue',String(saved.hue));const value=Math.max(0,Math.min(100,Number(s.overlayTransparency)));root.style.setProperty('--overlay-panel-opacity',`${100-value}%`);root.lang={zh:'zh-CN',en:'en',ja:'ja'}[s.lang]||'zh-CN'}catch{Object.assign(document.documentElement.dataset,publishedDefaults)}</script>
 </head>
 <body data-article-id={Astro.props.articleId || ""} data-article-lang={Astro.props.articleLang || "zh-CN"} class:list={[{home}]} data-article={String(article)} data-static-background={String(!!Astro.props.background)} style={`--page-image:url('${background}');--image-focus:${backgroundPosition}`}>
 <a class="skip-link" href="#main"><T k="skip"/></a><div class="wallpaper" aria-hidden="true"></div>
 <header class="topbar" id="topbar">
-<a class="brand" href="/">Roooooxy’s BLOG</a>
-<nav aria-label="Navigation"><a href="/" class:list={[{active:home}]}><Icon name="home" size={16}/><T k="home"/></a><div class="nav-dropdown"><button id="links-toggle" aria-expanded="false" aria-controls="links-menu"><Icon name="link" size={16}/><T k="links"/><span class="chevron"><Icon name="down" size={13}/></span></button><div class="nav-menu" id="links-menu" hidden><a href={roxy.repository} target="_blank" rel="noopener"><Icon name="github"/>GitHub <span>↗</span></a><a href="/rss.xml"><Icon name="rss"/>RSS</a></div></div><a href="/about/"><Icon name="user" size={16}/><T k="about"/></a></nav>
-<div class="tools"><form class="nav-search" action="/browse/" role="search"><button type="submit" aria-label="搜索" data-i18n-label="search"><Icon name="search" size={17}/></button><input name="q" id="search-input" type="search" aria-label="搜索" data-i18n-label="search" placeholder="搜索" data-i18n-placeholder="search" autocomplete="off"/><select name="scope" id="search-scope" aria-label="Search scope"><option value="title" data-i18n="titleOnly">标题</option><option value="full" data-i18n="fullText">全文</option></select></form><button id="search-mobile" class="search-mobile" aria-label="搜索" data-i18n-label="search"><Icon name="search"/></button><button id="appearance-open" aria-label="外观" data-i18n-label="appearance" aria-expanded="false" aria-controls="appearance"><Icon name="palette"/></button><button id="theme-toggle" aria-label="Light / Dark"><Icon name="sun"/></button><button class="mobile-only" data-drawer="right-sidebar" aria-label="个人资料" data-i18n-label="profile"><Icon name="user"/></button></div>
+<a class="brand" href="/"><img src="/images/roxy/brand.png" width="2059" height="764" alt={roxy.title} fetchpriority="high"/></a>
+<nav aria-label="导航" data-i18n-label="navigation"><a href="/" class:list={[{active:home}]}><Icon name="home" size={16}/><T k="home"/></a><div class="nav-dropdown"><button id="links-toggle" aria-expanded="false" aria-controls="links-menu"><Icon name="link" size={16}/><T k="links"/><span class="chevron"><Icon name="down" size={13}/></span></button><div class="nav-menu" id="links-menu" hidden><a href={roxy.repository} target="_blank" rel="noopener"><Icon name="github"/>GitHub <span>↗</span></a><a href="/rss.xml"><Icon name="rss"/>RSS</a></div></div><a href="/about/"><Icon name="user" size={16}/><T k="about"/></a></nav>
+<div class="tools"><form class="nav-search" action="/browse/" role="search"><button type="submit" aria-label="搜索" data-i18n-label="search"><Icon name="search" size={17}/></button><input name="q" id="search-input" type="search" aria-label="搜索" data-i18n-label="search" placeholder="搜索" data-i18n-placeholder="search" autocomplete="off"/><select name="scope" id="search-scope" aria-label="搜索范围" data-i18n-label="searchScope"><option value="title" data-i18n="titleOnly">标题</option><option value="full" data-i18n="fullText">全文</option></select></form><button id="search-mobile" class="search-mobile" aria-label="搜索" data-i18n-label="search"><Icon name="search"/></button><button id="appearance-open" aria-label="外观" data-i18n-label="appearance" aria-expanded="false" aria-controls="appearance"><Icon name="palette"/></button><button id="theme-toggle" aria-label="切换浅色或深色模式" data-i18n-label="themeToggle"><Icon name="sun"/></button><button class="mobile-only" data-drawer="right-sidebar" aria-label="个人资料" data-i18n-label="profile"><Icon name="user"/></button></div>
 </header>
-<section class:list={['hero',{compact:!home}]} aria-label="Banner"><div class="hero-image"></div><svg class="waves" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true"><g><path d="M-1440 25Q-1080 85-720 25T0 25T720 25T1440 25T2160 25T2880 25V80H-1440Z"/><path d="M-1440 40Q-1080 0-720 40T0 40T720 40T1440 40T2160 40T2880 40V80H-1440Z"/><path d="M-1440 55Q-1080 10-720 55T0 55T720 55T1440 55T2160 55T2880 55V80H-1440Z"/></g></svg></section>
+<section class:list={['hero',{compact:!home}]} aria-label="横幅" data-i18n-label="banner"><div class="hero-image"></div><svg class="waves" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true"><g><path d="M-1440 25Q-1080 85-720 25T0 25T720 25T1440 25T2160 25T2880 25V80H-1440Z"/><path d="M-1440 40Q-1080 0-720 40T0 40T720 40T1440 40T2160 40T2880 40V80H-1440Z"/><path d="M-1440 55Q-1080 10-720 55T0 55T720 55T1440 55T2160 55T2880 55V80H-1440Z"/></g></svg></section>
 <div class="mobile-toolbar"><button data-drawer={article ? undefined : "left-sidebar"} data-toc-toggle={article ? "" : undefined}><Icon name="menu"/><T k={article?'toc':'filter'}/></button></div>
 <div class="site-grid"><aside id="left-sidebar" class="sidebar left"><button class="drawer-close" aria-label="关闭" data-i18n-label="close"><Icon name="close"/></button><slot name="left"/></aside><main id="main" tabindex="-1"><slot/></main>
 <aside id="right-sidebar" class="sidebar right"><button class="drawer-close" aria-label="关闭" data-i18n-label="close"><Icon name="close"/></button>
-<section class="panel profile"><a href="/about/" class="avatar-link"><img class="avatar" src={roxy.avatar} alt="Roooooxy"/></a><h2>{roxy.name}</h2><div class="profile-divider"></div><p class="motto">{roxy.motto==='格言待填写'?<T k="motto"/>:roxy.motto}</p><div class="social-links"><a href={roxy.repository} target="_blank" rel="noopener" aria-label="GitHub"><Icon name="github" size={24}/></a><a href="/rss.xml" aria-label="RSS"><Icon name="rss" size={23}/></a><a href="/about/" aria-label="About"><Icon name="user" size={22}/></a></div></section>
+<section class="panel profile"><a href="/about/" class="avatar-link"><img class="avatar" src={roxy.avatar} alt="Roooooxy"/></a><h2>{roxy.name}</h2><div class="profile-divider"></div><p class="motto">{roxy.motto==='格言待填写'?<T k="motto"/>:roxy.motto}</p><div class="social-links"><a href={roxy.repository} target="_blank" rel="noopener" aria-label="GitHub"><Icon name="github" size={24}/></a><a href="/rss.xml" aria-label="RSS"><Icon name="rss" size={23}/></a><a href="/about/" aria-label="关于" data-i18n-label="about"><Icon name="user" size={22}/></a></div></section>
 {roxy.announcement&&<section class="panel"><h3><T k="announcement"/></h3><p>{roxy.announcement}</p></section>}
 <section class="panel calendar-panel"><div class="calendar-heading"><button id="calendar-today" aria-label="今天" data-i18n-label="today"><h3 id="calendar-title"></h3></button><div><button id="calendar-prev" aria-label="上个月" data-i18n-label="prevMonth">‹</button><button id="calendar-next" aria-label="下个月" data-i18n-label="nextMonth">›</button></div></div><div class="calendar-week" id="calendar-week"></div><div class="calendar-grid" id="calendar-grid"></div></section>
 <section class="panel stats"><h3><T k="statistics"/></h3><dl>{[['file','posts',all.length],['folder','categories',categories],['tag','tags',tags],['book','words',words.toLocaleString()]].map(([icon,key,value])=><div><dt><Icon name={icon}/><T k={key as any}/></dt><dd>{value}</dd></div>)}<div><dt><Icon name="calendar"/><T k="running"/></dt><dd><span id="running-days" data-start="2026-09-22">1</span> <small><T k="days"/></small></dd></div><div><dt><Icon name="heart"/><T k="lastActivity"/></dt><dd><span id="last-activity" data-date={lastUpdate}>0</span> <small><T k="days"/></small></dd></div></dl></section>
@@ -71,7 +75,7 @@ const lastUpdate = all.length
 <section id="appearance" class="appearance-panel" hidden role="dialog" aria-label="外观" data-i18n-label="appearance">
 <div class="appearance-tabs" role="tablist" aria-label="外观设置" data-i18n-label="appearance">{[['appearance','appearance'],['background','wallpaper'],['effects','effects'],['other','otherSettings']].map(([id,key])=><button id={`appearance-tab-${id}`} role="tab" data-appearance-tab={id} aria-controls={`appearance-panel-${id}`} aria-selected={id==='appearance'}><T k={key as any}/></button>)}</div>
 <div class="appearance-content">
-<div id="appearance-panel-appearance" data-appearance-panel="appearance" role="tabpanel" aria-labelledby="appearance-tab-appearance"><div class="appearance-title"><h3><T k="themeColor"/></h3><button id="reset-color" aria-label="Reset color">↻</button><output id="hue-value">250</output></div><input class="hue-slider" id="hue-slider" type="range" min="0" max="360" value="250" aria-label="主题色" data-i18n-label="themeColor"/><label class="color-setting"><input id="color-picker" type="color" value="#8a72ee" aria-label="调色盘" data-i18n-label="colorPicker"/><T k="colorPicker"/><output id="color-value">#8a72ee</output></label>
+<div id="appearance-panel-appearance" data-appearance-panel="appearance" role="tabpanel" aria-labelledby="appearance-tab-appearance"><div class="appearance-title"><h3><T k="themeColor"/></h3><button id="reset-color" aria-label="Reset color">↻</button><output id="hue-value">{publishedColor.hue.toFixed(1)}</output></div><input class="hue-slider" id="hue-slider" type="range" min="0" max="360" step="0.1" value={publishedColor.hue} style={{background: hueGradient}} aria-label="主题色" data-i18n-label="themeColor"/><label class="color-setting"><input id="color-picker" type="color" value={published.color} aria-label="调色盘" data-i18n-label="colorPicker"/><T k="colorPicker"/><output id="color-value">{published.color}</output></label>
 <FontSelect/><h3><T k="layout"/></h3><div class="segmented"><button data-layout="list"><T k="list"/></button><button data-layout="grid"><T k="grid"/></button></div><label class="setting-row"><T k="wide"/><input type="checkbox" id="setting-wide" role="switch"/><span class="switch"></span></label>
 </div>
 <div id="appearance-panel-background" data-appearance-panel="background" role="tabpanel" aria-labelledby="appearance-tab-background" hidden><p id="focus-background-hint" hidden><T k="focusBackgroundLocked"/></p><h3><T k="wallpaper"/></h3><div class="wallpaper-options">{(['banner','fullscreen','overlay','none'] as const).map(mode=><button data-mode={mode} aria-pressed={mode==='banner'}><Icon name={mode==='none'?'close':'file'} size={16}/><T k={mode}/><span class="selected-mark">✓</span></button>)}</div>

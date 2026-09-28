@@ -23,7 +23,7 @@ export function rehypeReadingIndex() {
 					text: "",
 				};
 				sections.push(current);
-			} else if (node.type === "text") current.text += node.value + " ";
+			} else if (node.type === "text") current.text += `${node.value} `;
 			else for (const child of node.children || []) walk(child);
 		}
 		walk(tree);

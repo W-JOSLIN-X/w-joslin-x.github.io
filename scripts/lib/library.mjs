@@ -8,8 +8,8 @@ export function resource(folder, relative, optional = false) {
 	if (!relative && optional) return null;
 	if (typeof relative !== "string" || !relative)
 		throw Error(`${folder}: missing resource path`);
-	const root = path.resolve(folder),
-		target = path.resolve(root, relative);
+	const root = path.resolve(folder);
+	const target = path.resolve(root, relative);
 	if (
 		!target.startsWith(root + path.sep) ||
 		!fs.existsSync(target) ||
@@ -44,8 +44,8 @@ export function loadLibrary(base = "content") {
 			if (!ids.includes(id))
 				throw Error(`catalog.yaml: ${kind}/${id} is not registered`);
 		for (const id of ids) {
-			const folder = path.join(base, kind, id),
-				meta = readYaml(path.join(folder, "meta.yaml"));
+			const folder = path.join(base, kind, id);
+			const meta = readYaml(path.join(folder, "meta.yaml"));
 			if (typeof meta.title !== "string" || !meta.title.trim())
 				throw Error(`${folder}: title is required`);
 			if (kind === "music" && typeof meta.artist !== "string")

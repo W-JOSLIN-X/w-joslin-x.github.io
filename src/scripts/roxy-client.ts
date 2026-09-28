@@ -1,26 +1,29 @@
-import { confirmSettings, exportCurrentGroup } from "./settings-dialogs";
+import { monthCells, shanghaiDay } from "../utils/roxy-calendar.mjs";
+import { baseColorAtHue } from "../utils/roxy-colors.mjs";
 import {
-	defaults as siteDefaults,
 	appearanceDataset,
+	defaults as siteDefaults,
 } from "../utils/roxy-defaults.mjs";
 import { language, localize, t } from "../utils/roxy-i18n";
-import { monthCells, shanghaiDay } from "../utils/roxy-calendar.mjs";
 import { hexToHsl, hslToHex } from "../utils/roxy-slideshow.mjs";
 import { pageFeature } from "./core/page-scope";
+import { confirmSettings, exportCurrentGroup } from "./settings-dialogs";
 import "./core/navigation";
+
 pageFeature((scope) => {
 	const root = document.documentElement;
 	Object.assign(root.dataset, appearanceDataset(root.dataset));
 	const $ = <T extends HTMLElement = HTMLElement>(s: string) =>
 		document.querySelector<T>(s)!;
-	const settings = $("#appearance"),
-		trigger = $("#appearance-open");
+	const settings = $("#appearance");
+	const trigger = $("#appearance-open");
+	const defaultHue = hexToHsl(siteDefaults.appearance.color, false).hue;
 	const defaults: Record<string, string> = {
 		...appearanceDataset(),
 		waves: String(siteDefaults.background.edge !== "none"),
 	};
 	function applyColor(color: string) {
-		const hsl = hexToHsl(color);
+		const hsl = hexToHsl(color, false);
 		root.dataset.color = color;
 		root.style.setProperty("--hue", String(hsl.hue));
 		root.style.setProperty("--accent", color);
@@ -30,7 +33,7 @@ pageFeature((scope) => {
 		root.dataset.color ||
 			(root.style.getPropertyValue("--hue")
 				? hslToHex(Number(root.style.getPropertyValue("--hue")), 78, 69)
-				: "#8a72ee"),
+				: siteDefaults.appearance.color),
 	);
 	function save() {
 		try {
@@ -38,7 +41,7 @@ pageFeature((scope) => {
 				"roxy-appearance-v3",
 				JSON.stringify({
 					...appearanceDataset(root.dataset),
-					hue: Number(root.style.getPropertyValue("--hue") || 250),
+					hue: Number(root.style.getPropertyValue("--hue") || defaultHue),
 				}),
 			);
 		} catch {}
@@ -76,13 +79,23 @@ pageFeature((scope) => {
 			$<HTMLSelectElement>(`#setting-${name}`).value =
 				root.dataset[name] || defaults[name];
 		root.dataset.waves = String(root.dataset.edge !== "none");
-		const hue = root.style.getPropertyValue("--hue") || "250";
+		const hue = root.style.getPropertyValue("--hue") || String(defaultHue);
 		$<HTMLInputElement>("#hue-slider").value = hue;
-		$("#hue-value").textContent = hue;
+		$("#hue-value").textContent = Number(hue).toFixed(1);
 		$<HTMLInputElement>("#color-picker").value =
-			root.dataset.color || "#8a72ee";
-		$("#color-value").textContent = root.dataset.color || "#8a72ee";
+			root.dataset.color || siteDefaults.appearance.color;
+		$("#color-value").textContent =
+			root.dataset.color || siteDefaults.appearance.color;
 		root.classList.toggle("dark", root.dataset.theme === "dark");
+		for (const image of document.querySelectorAll<HTMLImageElement>(
+			".plantuml-image",
+		)) {
+			const source =
+				root.dataset.theme === "dark"
+					? image.dataset.darkSrc
+					: image.dataset.lightSrc;
+			if (source && image.getAttribute("src") !== source) image.src = source;
+		}
 		scrollNav();
 	}
 	function closeSettings() {
@@ -113,24 +126,24 @@ pageFeature((scope) => {
 		.querySelectorAll<HTMLButtonElement>(
 			"#appearance [data-mode],#appearance [data-layout],#appearance [data-lang]",
 		)
-		.forEach(
-			(b) =>
-				(b.onclick = () => {
-					const key = b.dataset.mode
-						? "mode"
-						: b.dataset.layout
-							? "layout"
-							: "lang";
-					root.dataset[key] = b.dataset[key];
-					sync();
-					save();
-					if (key === "lang") localize();
-				}),
-		);
+		.forEach((b) => {
+			b.onclick = () => {
+				const key = b.dataset.mode
+					? "mode"
+					: b.dataset.layout
+						? "layout"
+						: "lang";
+				root.dataset[key] = b.dataset[key];
+				sync();
+				save();
+				if (key === "lang") localize();
+			};
+		});
 	$<HTMLInputElement>("#hue-slider").oninput = (e) => {
 		const hue = Number((e.target as HTMLInputElement).value);
-		const { saturation, lightness } = hexToHsl(root.dataset.color || "#8a72ee");
-		applyColor(hslToHex(hue, saturation || 78, lightness));
+		applyColor(baseColorAtHue(hue));
+		// Preserve the control position rather than quantizing it through 8-bit RGB.
+		root.style.setProperty("--hue", String(hue));
 		sync();
 		save();
 	};
@@ -200,7 +213,9 @@ pageFeature((scope) => {
 	$("#reset-appearance").onclick = () => resetGroup("all");
 	document
 		.querySelectorAll<HTMLButtonElement>("[data-reset-group]")
-		.forEach((b) => (b.onclick = () => resetGroup(b.dataset.resetGroup!)));
+		.forEach((b) => {
+			b.onclick = () => resetGroup(b.dataset.resetGroup!);
+		});
 
 	function scrollNav() {
 		const opacity =
@@ -209,8 +224,8 @@ pageFeature((scope) => {
 		$("#topbar").classList.toggle("scrolled", opacity > 0.4);
 	}
 	scope.on(window, "scroll", scrollNav, { passive: true });
-	const menu = $("#links-menu"),
-		menuButton = $("#links-toggle");
+	const menu = $("#links-menu");
+	const menuButton = $("#links-toggle");
 	function closeMenu() {
 		menu.hidden = true;
 		menuButton.setAttribute("aria-expanded", "false");
@@ -238,27 +253,39 @@ pageFeature((scope) => {
 		params.get("scope") === "full" ? "full" : "title";
 	let drawerTrigger: HTMLButtonElement | null = null;
 	function closeDrawer() {
-		document
-			.querySelectorAll(".drawer-open")
-			.forEach((e) => e.classList.remove("drawer-open"));
+		document.querySelectorAll(".drawer-open").forEach((e) => {
+			e.classList.remove("drawer-open");
+		});
 		document.body.style.overflow = "";
+		document.body.classList.remove("music-expanded");
 		drawerTrigger?.focus();
 		drawerTrigger = null;
 	}
-	document.querySelectorAll<HTMLButtonElement>("[data-drawer]").forEach(
-		(b) =>
-			(b.onclick = () => {
-				closeDrawer();
-				drawerTrigger = b;
-				const drawer = document.getElementById(b.dataset.drawer!)!;
-				drawer.classList.add("drawer-open");
-				document.body.style.overflow = "hidden";
-				drawer.querySelector<HTMLButtonElement>(".drawer-close")?.focus();
-			}),
+	function openDrawer(
+		id: string,
+		trigger: HTMLButtonElement,
+		musicOnly = false,
+	) {
+		closeDrawer();
+		const drawer = document.getElementById(id);
+		if (!drawer) return;
+		drawerTrigger = trigger;
+		drawer.classList.add("drawer-open");
+		document.body.classList.toggle("music-expanded", musicOnly);
+		document.body.style.overflow = "hidden";
+		drawer.querySelector<HTMLButtonElement>(".drawer-close")?.focus();
+	}
+	scope.on(window, "roxy:music-drawer", () =>
+		openDrawer("right-sidebar", $("#music-mini-expand"), true),
 	);
-	document
-		.querySelectorAll<HTMLButtonElement>(".drawer-close")
-		.forEach((b) => (b.onclick = closeDrawer));
+	document.querySelectorAll<HTMLButtonElement>("[data-drawer]").forEach((b) => {
+		b.onclick = () => {
+			openDrawer(b.dataset.drawer!, b);
+		};
+	});
+	document.querySelectorAll<HTMLButtonElement>(".drawer-close").forEach((b) => {
+		b.onclick = closeDrawer;
+	});
 	scope.on(document, "keydown", (e) => {
 		if (e.key === "Escape") {
 			if (document.querySelector("dialog[open]")) return;
@@ -277,8 +304,8 @@ pageFeature((scope) => {
 			).filter(
 				(el) => el.getClientRects().length && !el.hasAttribute("disabled"),
 			);
-			const first = els[0],
-				last = els.at(-1);
+			const first = els[0];
+			const last = els.at(-1);
 			if (e.shiftKey && document.activeElement === first) {
 				e.preventDefault();
 				last?.focus();
@@ -292,20 +319,21 @@ pageFeature((scope) => {
 	scope.on(window, "roxy:filters", closeDrawer);
 	$("#back-top").onclick = () =>
 		window.scrollTo({ top: 0, behavior: "smooth" });
-	document.querySelectorAll<HTMLButtonElement>("[data-tab]").forEach(
-		(b) =>
-			(b.onclick = () => {
-				document
-					.querySelectorAll<HTMLButtonElement>("[data-tab]")
-					.forEach((x) => {
-						x.classList.toggle("active", x === b);
-						x.setAttribute("aria-selected", String(x === b));
-					});
-				document
-					.querySelectorAll<HTMLElement>("[data-tab-panel]")
-					.forEach((p) => (p.hidden = p.dataset.tabPanel !== b.dataset.tab));
-			}),
-	);
+	document.querySelectorAll<HTMLButtonElement>("[data-tab]").forEach((b) => {
+		b.onclick = () => {
+			document
+				.querySelectorAll<HTMLButtonElement>("[data-tab]")
+				.forEach((x) => {
+					x.classList.toggle("active", x === b);
+					x.setAttribute("aria-selected", String(x === b));
+				});
+			document
+				.querySelectorAll<HTMLElement>("[data-tab-panel]")
+				.forEach((p) => {
+					p.hidden = p.dataset.tabPanel !== b.dataset.tab;
+				});
+		};
+	});
 	const records = JSON.parse($("#activity-data").textContent || "[]") as {
 		date: string;
 		message: string;
@@ -408,25 +436,31 @@ pageFeature((scope) => {
 					if (e.isIntersecting)
 						document
 							.querySelectorAll<HTMLAnchorElement>(".toc a")
-							.forEach((a) =>
+							.forEach((a) => {
 								a.classList.toggle(
 									"current",
 									decodeURIComponent(a.hash.slice(1)) === e.target.id,
-								),
-							);
+								);
+							});
 			},
 			{ rootMargin: "-10% 0px -65% 0px" },
 		);
-		headings.forEach((h) => observer.observe(h));
+		headings.forEach((h) => {
+			observer.observe(h);
+		});
 		scope.defer(() => observer.disconnect());
 	}
-	document
-		.querySelectorAll(".toc a")
-		.forEach((a) => a.addEventListener("click", closeDrawer));
+	document.querySelectorAll(".toc a").forEach((a) => {
+		a.addEventListener("click", closeDrawer);
+	});
 	document
 		.querySelectorAll<HTMLButtonElement>(".copy-btn")
 		.forEach((button) => {
-			button.setAttribute("aria-label", "Copy");
+			const label = (key: "copyCode" | "copied" | "manualCopyCode") => {
+				button.dataset.i18nLabel = key;
+				button.setAttribute("aria-label", t(key));
+			};
+			label("copyCode");
 			button.onclick = async () => {
 				const code = button.closest("figure")?.querySelector("code");
 				if (!code) return;
@@ -438,14 +472,19 @@ pageFeature((scope) => {
 					: code.textContent || "";
 				try {
 					await navigator.clipboard.writeText(text);
-					button.setAttribute("aria-label", "Copied");
+					label("copied");
 					button.classList.add("copied");
 					scope.timeout(() => {
-						button.setAttribute("aria-label", "Copy");
+						label("copyCode");
 						button.classList.remove("copied");
 					}, 1800);
 				} catch {
-					button.setAttribute("aria-label", "Select and copy");
+					label("manualCopyCode");
+					const selection = getSelection();
+					const range = document.createRange();
+					range.selectNodeContents(code);
+					selection?.removeAllRanges();
+					selection?.addRange(range);
 				}
 			};
 		});

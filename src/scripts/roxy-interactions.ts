@@ -1,5 +1,6 @@
-import { pageFeature } from "./core/page-scope";
 import { t } from "../utils/roxy-i18n";
+import { pageFeature } from "./core/page-scope";
+
 const previewCache = new Map<string, Promise<any>>();
 pageFeature((scope) => {
 	const input = document.querySelector<HTMLInputElement>("#search-input")!;
@@ -89,9 +90,9 @@ pageFeature((scope) => {
 	popover.hidden = true;
 	popover.setAttribute("role", "tooltip");
 	document.body.append(popover);
-	let trigger: HTMLAnchorElement | undefined,
-		timer: number | undefined,
-		version = 0;
+	let trigger: HTMLAnchorElement | undefined;
+	let timer: number | undefined;
+	let version = 0;
 	function hide() {
 		++version;
 		scope.clearTimeout(timer);
@@ -105,17 +106,15 @@ pageFeature((scope) => {
 	});
 	function position() {
 		if (!trigger || popover.hidden) return;
-		const rect = trigger.getBoundingClientRect(),
-			box = popover.getBoundingClientRect();
-		popover.style.left =
-			Math.max(12, Math.min(innerWidth - box.width - 12, rect.left)) + "px";
-		popover.style.top =
-			Math.max(
-				12,
-				rect.bottom + box.height + 12 < innerHeight
-					? rect.bottom + 8
-					: rect.top - box.height - 8,
-			) + "px";
+		const rect = trigger.getBoundingClientRect();
+		const box = popover.getBoundingClientRect();
+		popover.style.left = `${Math.max(12, Math.min(innerWidth - box.width - 12, rect.left))}px`;
+		popover.style.top = `${Math.max(
+			12,
+			rect.bottom + box.height + 12 < innerHeight
+				? rect.bottom + 8
+				: rect.top - box.height - 8,
+		)}px`;
 	}
 	function eligible(target: EventTarget | null) {
 		const a =
@@ -139,8 +138,8 @@ pageFeature((scope) => {
 		trigger = a;
 		const token = version;
 		timer = scope.timeout(async () => {
-			const url = new URL(a.href),
-				slug = url.pathname.replace(/^\/posts\//, "").replace(/\/$/, "");
+			const url = new URL(a.href);
+			const slug = url.pathname.replace(/^\/posts\//, "").replace(/\/$/, "");
 			const endpoint = `/previews/${slug}.json`;
 			try {
 				if (!previewCache.has(endpoint)) {
@@ -170,7 +169,7 @@ pageFeature((scope) => {
 					data.sections.find((s: any) => s.text);
 				const title = document.createElement("strong");
 				title.textContent =
-					data.title + (hash && section?.title ? " · " + section.title : "");
+					data.title + (hash && section?.title ? ` · ${section.title}` : "");
 				const body = document.createElement("p");
 				body.textContent = section?.text || "";
 				popover.replaceChildren(title, body);

@@ -1,6 +1,6 @@
 ---
-import RoxyLayout from "../layouts/RoxyLayout.astro";
 import T from "../components/roxy/Text.astro";
 import { roxy } from "../config/roxy";
+import RoxyLayout from "../layouts/RoxyLayout.astro";
 ---
 <RoxyLayout title="关于"><section class="panel" slot="left"><h3><T k="about"/></h3><div class="toc"><a href="#hello">Roooooxy</a></div></section><article class="panel article prose"><h1 id="hello">Roooooxy</h1><p>{roxy.subtitle}</p><p><a href={roxy.repository}>GitHub ↗</a></p></article></RoxyLayout>

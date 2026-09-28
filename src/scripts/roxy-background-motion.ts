@@ -1,20 +1,21 @@
-import { pageFeature } from "./core/page-scope";
 import { decorationState } from "../utils/roxy-motion.mjs";
+import { pageFeature } from "./core/page-scope";
+
 pageFeature((scope) => {
-	const root = document.documentElement,
-		hero = document.querySelector<HTMLElement>(".hero")!;
-	const reduced = matchMedia("(prefers-reduced-motion:reduce)"),
-		mobile = matchMedia("(max-width:700px)");
+	const root = document.documentElement;
+	const hero = document.querySelector<HTMLElement>(".hero")!;
+	const reduced = matchMedia("(prefers-reduced-motion:reduce)");
+	const mobile = matchMedia("(max-width:700px)");
 	const canvas = document.createElement("canvas");
 	canvas.className = "background-atmosphere";
 	canvas.setAttribute("aria-hidden", "true");
 	const context = canvas.getContext("2d");
 	if (!context) return;
-	let frame = 0,
-		last = 0,
-		clock = 0,
-		w = 0,
-		h = 0;
+	let frame = 0;
+	let last = 0;
+	let clock = 0;
+	let w = 0;
+	let h = 0;
 	let particles: {
 		x: number;
 		y: number;
@@ -73,8 +74,8 @@ pageFeature((scope) => {
 					context!.globalAlpha = 0.12;
 					context!.strokeStyle = `hsl(${230 + i * 35} 65% 65%)`;
 					context!.lineWidth = 10 + p.size;
-					const y = (h * (i + 1)) / (particles.length + 1),
-						drift = Math.sin(clock * 0.12 + p.phase) * h * 0.12;
+					const y = (h * (i + 1)) / (particles.length + 1);
+					const drift = Math.sin(clock * 0.12 + p.phase) * h * 0.12;
 					context!.beginPath();
 					context!.moveTo(-20, y + drift);
 					context!.bezierCurveTo(

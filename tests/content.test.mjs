@@ -1,11 +1,11 @@
-import test from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
-import { loadLibrary, resource } from "../scripts/lib/library.mjs";
+import test from "node:test";
 import { contentHistory } from "../scripts/lib/history.mjs";
+import { loadLibrary, resource } from "../scripts/lib/library.mjs";
 import { nextTrack } from "../src/utils/roxy-music.mjs";
 import { excerpt, highlightSegments } from "../src/utils/roxy-search.mjs";
 
@@ -131,7 +131,7 @@ test("history survives folder migration without turning maintenance into activit
 });
 
 test("search excerpts find body context and highlighting never interprets markup", () => {
-	const text = "前文".repeat(100) + "梯度下降" + "后文".repeat(100);
+	const text = `${"前文".repeat(100)}梯度下降${"后文".repeat(100)}`;
 	const result = excerpt(text, "梯度", 20);
 	assert.ok(result.startsWith("…") && result.endsWith("…"));
 	assert.ok(result.includes("梯度下降"));
@@ -152,12 +152,28 @@ test("search highlights multiple terms and normalized width", () => {
 	);
 });
 
-import { imageReferences } from "../scripts/lib/markdown-resources.mjs";
+import {
+	imageReferences,
+	rewriteImageReferences,
+} from "../scripts/lib/markdown-resources.mjs";
+
 test("download image discovery skips code examples and handles Typora HTML/reference images", () => {
 	const body =
 		'`![example](./missing.jpg)`\n```md\n![sample](./missing2.jpg)\n```\n![real](./a.jpg)\n<img src="./b.jpg" width="300">\n![reference][pic]\n[pic]: ./c.jpg';
 	assert.deepEqual(
 		imageReferences(body).map((x) => x.src),
 		["./a.jpg", "./b.jpg", "./c.jpg"],
+	);
+});
+test("download rewriting preserves identical code samples and rewrites only image destinations", () => {
+	const code = "```md\n![same](./a.jpg)\n```\n`![same](./a.jpg)`\n";
+	const body =
+		code +
+		'![same](./a.jpg)\n![./a.jpg](./a.jpg)\n<img alt="./a.jpg" src="./a.jpg">\n![ref][p]\n[p]: ./a.jpg';
+	const result = rewriteImageReferences(body, () => "images/1-a.jpg");
+	assert.equal(
+		result,
+		code +
+			'![same](images/1-a.jpg)\n![./a.jpg](images/1-a.jpg)\n<img alt="./a.jpg" src="images/1-a.jpg">\n![ref][p]\n[p]: images/1-a.jpg',
 	);
 });

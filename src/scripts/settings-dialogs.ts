@@ -1,7 +1,9 @@
-import { t } from "../utils/roxy-i18n";
 import { roxy } from "../config/roxy";
-import { pageFeature } from "./core/page-scope";
 import { exportDefaults } from "../utils/roxy-defaults.mjs";
+import { t } from "../utils/roxy-i18n";
+import { normalizeEffects } from "../utils/roxy-personalization.mjs";
+import { pageFeature } from "./core/page-scope";
+
 const read = (key: string) => {
 	try {
 		const value = JSON.parse(localStorage.getItem(key) || "{}");
@@ -60,11 +62,12 @@ export async function exportCurrentGroup(group: string) {
 	};
 	if (group === "appearance") values.font = read("roxy-fonts-v1").global;
 	if (group === "background") Object.assign(values, read("roxy-slideshow-v1"));
-	if (group === "effects") Object.assign(values, read("roxy-effects-v1"));
+	if (group === "effects")
+		Object.assign(values, normalizeEffects(read("roxy-effects-v1")));
 	const config = exportDefaults(group, values);
 	showExport(
 		JSON.stringify({ [group]: config[group] }, null, 2),
-		JSON.stringify(config, null, 2) + "\n",
+		`${JSON.stringify(config, null, 2)}\n`,
 		"src/config/roxy-defaults.json",
 	);
 }

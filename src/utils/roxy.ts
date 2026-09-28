@@ -1,5 +1,6 @@
-import updates from "../../.generated/updates.json";
 import { getCollection } from "astro:content";
+import updates from "../../.generated/updates.json";
+import { inferredUpdated } from "./content-policy.mjs";
 export const day = (date: Date | string) =>
 	new Intl.DateTimeFormat("sv-SE", {
 		timeZone: "Asia/Shanghai",
@@ -32,7 +33,7 @@ export async function posts() {
 		.map((p) => {
 			const date = (updates as Record<string, string>)[slugOf(p.id)];
 			if (!p.data.updated && date)
-				p.data.updated = new Date(`${date}T00:00:00+08:00`);
+				p.data.updated = inferredUpdated(p.data.published, date);
 			return p;
 		})
 		.sort(

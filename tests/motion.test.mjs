@@ -1,6 +1,7 @@
-import test from "node:test";
 import assert from "node:assert/strict";
+import test from "node:test";
 import { decorationState } from "../src/utils/roxy-motion.mjs";
+
 test("decorations stop for every suppression condition and edge is banner-only", () => {
 	const base = {
 		hidden: false,

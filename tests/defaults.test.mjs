@@ -1,16 +1,17 @@
-import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import test from "node:test";
 import vm from "node:vm";
-import { hexToHsl } from "../src/utils/roxy-slideshow.mjs";
 import {
-	defaults,
-	normalizeGroup,
 	appearanceDataset,
-	exportDefaults,
+	defaults,
 	exportCatalog,
+	exportDefaults,
+	normalizeGroup,
 	validateDefaults,
 } from "../src/utils/roxy-defaults.mjs";
+import { hexToHsl } from "../src/utils/roxy-slideshow.mjs";
+
 test("head bootstrap preserves legacy hue and wave choices without restoring temporary focus", () => {
 	const layout = readFileSync(
 		new URL("../src/layouts/RoxyLayout.astro", import.meta.url),
@@ -61,7 +62,10 @@ test("legacy waves migrate without changing explicit choices; malformed preferen
 		normalizeGroup("background", { edge: "clouds", waves: false }).edge,
 		"clouds",
 	);
-	assert.equal(normalizeGroup("background", { interval: NaN }).interval, 15);
+	assert.equal(
+		normalizeGroup("background", { interval: Number.NaN }).interval,
+		15,
+	);
 	assert.equal(normalizeGroup("appearance", { wide: "true" }).wide, true);
 });
 test("gallery export changes only ordered defaults and preserves other catalog data", () => {
@@ -73,7 +77,7 @@ test("gallery export changes only ordered defaults and preserves other catalog d
 	const exported = exportCatalog(source, ids, ids);
 	assert.match(
 		exported,
-		/defaultBackgrounds:\r?\n  - makeine-classroom\r?\n  - mushoku-meadow-hd/,
+		/defaultBackgrounds:\r?\n {2}- makeine-classroom\r?\n {2}- mushoku-meadow-hd/,
 	);
 	assert.equal(
 		exported.split("defaultBackgrounds:")[0],
@@ -81,4 +85,15 @@ test("gallery export changes only ordered defaults and preserves other catalog d
 	);
 	assert.equal(exported.split("music:")[1], source.split("music:")[1]);
 	assert.throws(() => exportCatalog(source, [], ids));
+});
+test("gallery export consumes the final list item with LF, CRLF and no trailing newline", () => {
+	for (const eol of ["\n", "\r\n"])
+		for (const suffix of ["", eol, `${eol}music: [song]${eol}`]) {
+			const source = `backgrounds: [a, b]${eol}defaultBackgrounds:${eol}  - a${suffix}`;
+			const result = exportCatalog(source, ["b"], ["a", "b"]);
+			assert.equal(
+				result,
+				`backgrounds: [a, b]${eol}defaultBackgrounds:${eol}  - b${eol}${suffix.includes("music") ? `music: [song]${eol}` : ""}`,
+			);
+		}
 });

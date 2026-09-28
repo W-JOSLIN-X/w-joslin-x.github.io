@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { glob } from "astro/loaders";
 import { extractFrontmatter } from "astro/markdown";
-
+import { assertPublicContent } from "../utils/content-policy.mjs";
 import { isDateOnlyFrontmatterField } from "../utils/frontmatter-date";
 
 type GlobOptions = Parameters<typeof glob>[0];
@@ -24,6 +24,7 @@ export function postGlob(options: GlobOptions): ReturnType<typeof glob> {
 				parseData: async <TData extends Record<string, unknown>>(
 					props: ParseDataOptions<TData>,
 				): Promise<TData> => {
+					assertPublicContent(props.data, props.filePath || props.id);
 					if (!props.filePath) {
 						throw new Error(`Post ${props.id} is missing its source file path`);
 					}

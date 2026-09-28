@@ -1,10 +1,10 @@
-import { musicTracks, musicDefaults } from "../config/music";
+import { musicDefaults, musicTracks } from "../config/music";
+import { type MessageKey, t } from "../utils/roxy-i18n";
 import {
 	formatMusicTime,
 	nextTrack,
 	readMusicPreferences,
 } from "../utils/roxy-music.mjs";
-import { t, type MessageKey } from "../utils/roxy-i18n";
 
 const player = document.querySelector<HTMLElement>("#music-player")!;
 const $ = <T extends HTMLElement = HTMLElement>(selector: string) =>
@@ -96,9 +96,9 @@ function sync() {
 	);
 	$("#music-mode").setAttribute("aria-label", label);
 	$("#music-mode").title = label;
-	player
-		.querySelectorAll<HTMLElement>("[data-mode-icon]")
-		.forEach((el) => (el.hidden = el.dataset.modeIcon !== mode));
+	player.querySelectorAll<HTMLElement>("[data-mode-icon]").forEach((el) => {
+		el.hidden = el.dataset.modeIcon !== mode;
+	});
 	const status = $("#music-status");
 	status.hidden = !errorKey;
 	status.textContent = errorKey ? t(errorKey) : "";
@@ -219,11 +219,11 @@ player
 cover.addEventListener("error", () => {
 	cover.hidden = true;
 });
-player.querySelectorAll<HTMLImageElement>(".track-cover img").forEach((img) =>
+player.querySelectorAll<HTMLImageElement>(".track-cover img").forEach((img) => {
 	img.addEventListener("error", () => {
 		img.hidden = true;
-	}),
-);
+	});
+});
 audio.addEventListener("loadedmetadata", () => {
 	if (restoreTime !== null && Number.isFinite(audio.duration)) {
 		audio.currentTime = restoreTime < audio.duration ? restoreTime : 0;
@@ -313,25 +313,9 @@ mini.querySelector<HTMLButtonElement>("#music-mini-expand")!.onclick = () => {
 		} catch {}
 		return;
 	}
-	const sidebar = document.querySelector<HTMLElement>("#right-sidebar")!;
-	document.body.classList.add("music-expanded");
-	sidebar.classList.add("drawer-open");
-	document.body.style.overflow = "hidden";
-	sidebar.querySelector<HTMLButtonElement>(".drawer-close")?.focus();
+	window.dispatchEvent(new Event("roxy:music-drawer"));
 };
-document.addEventListener("astro:page-load", () => {
-	document
-		.querySelectorAll<HTMLButtonElement>(".drawer-close")
-		.forEach((button) =>
-			button.addEventListener("click", () =>
-				document.body.classList.remove("music-expanded"),
-			),
-		);
-	syncMini();
-});
-window.addEventListener("keydown", (event) => {
-	if (event.key === "Escape") document.body.classList.remove("music-expanded");
-});
+document.addEventListener("astro:page-load", syncMini);
 try {
 	mini.classList.toggle(
 		"collapsed",

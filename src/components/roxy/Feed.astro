@@ -1,14 +1,15 @@
 ---
 import {
-	posts,
 	day,
-	postHref,
 	plainText,
-	wordCount,
+	postHref,
+	posts,
 	slugOf,
+	wordCount,
 } from "../../utils/roxy";
 import Icon from "./Icon.astro";
 import T from "./Text.astro";
+
 const { browse = false } = Astro.props;
 const all = await posts();
 const categories = [

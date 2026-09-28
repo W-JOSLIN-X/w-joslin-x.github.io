@@ -1,5 +1,6 @@
 ---
-import { messages, type MessageKey } from "../../utils/roxy-i18n";
+import { type MessageKey, messages } from "../../utils/roxy-i18n";
+
 const { k } = Astro.props as { k: MessageKey };
 ---
 <span data-i18n={k}>{messages.zh[k]}</span>

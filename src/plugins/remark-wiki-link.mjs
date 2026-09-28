@@ -76,10 +76,18 @@ function collectPostMetas() {
 			} else if (MARKDOWN_EXTENSION.test(entry.name)) {
 				try {
 					if (!statSync(filePath).isFile()) continue;
+					const data = matter(readFileSync(filePath, "utf8")).data ?? {};
+					if (
+						data.draft ||
+						data.encrypted ||
+						data.password ||
+						data.hideHomeContent
+					)
+						continue;
 					metas.push({
 						filePath,
 						contentPath: toContentPath(filePath),
-						data: matter(readFileSync(filePath, "utf8")).data ?? {},
+						data,
 					});
 				} catch {
 					// 单篇文章损坏不应阻断其它 Wiki Link。
@@ -251,6 +259,8 @@ function createLink(parsed, metas, options) {
 	const meta = parsed.contentPath
 		? resolveMeta(metas, parsed.contentPath)
 		: null;
+	if (parsed.contentPath && !meta)
+		return text(parsed.alias || parsed.destination);
 	const base = parsed.contentPath
 		? postUrl(meta, parsed.contentPath, options, metas)
 		: "";
@@ -272,10 +282,9 @@ function formatDate(value) {
 async function createCard(parsed, metas, options, currentFilePath) {
 	const meta = resolveMeta(metas, parsed.contentPath);
 	if (!meta) return null;
-	const encrypted = meta.data.encrypted === true || Boolean(meta.data.password);
 	const title = displayTitle(parsed, meta);
 	const info = [element("div", { class: "wlc-title" }, [text(title)])];
-	if (!encrypted && typeof meta.data.description === "string") {
+	if (typeof meta.data.description === "string") {
 		const description = meta.data.description.trim();
 		if (description) {
 			info.push(
@@ -313,9 +322,7 @@ async function createCard(parsed, metas, options, currentFilePath) {
 		info.push(element("div", { class: "wlc-meta" }, metaItems));
 	}
 
-	const cover = encrypted
-		? null
-		: await createWikiCover(meta, title, options, currentFilePath);
+	const cover = await createWikiCover(meta, title, options, currentFilePath);
 
 	return element(
 		"a",

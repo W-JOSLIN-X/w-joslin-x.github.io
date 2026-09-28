@@ -7,7 +7,6 @@ import { pluginLineNumbers } from "@expressive-code/plugin-line-numbers";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, fontProviders } from "astro/config";
 import expressiveCode from "astro-expressive-code";
-import icon from "astro-icon";
 import { pluginLanguageLogo } from "ec-lang-logo";
 import "katex/dist/contrib/mhchem.mjs";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
@@ -25,7 +24,6 @@ import {
 	permalinkConfig,
 	siteConfig,
 } from "./src/config/index.ts";
-import { buildIconInclude } from "./src/plugins/astro-icon-include.mjs";
 import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.js";
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
 import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.mjs";
@@ -117,9 +115,6 @@ export default defineConfig({
 
 	integrations: [
 
-		icon({
-			include: buildIconInclude(),
-		}),
 		expressiveCode({
 			themes: [expressiveCodeConfig.lightTheme, expressiveCodeConfig.darkTheme],
 			plugins: [

@@ -1,6 +1,6 @@
 import rss from "@astrojs/rss";
-import { posts, postHref } from "../utils/roxy";
 import { roxy } from "../config/roxy";
+import { postHref, posts } from "../utils/roxy";
 export async function GET() {
 	return rss({
 		title: roxy.title,

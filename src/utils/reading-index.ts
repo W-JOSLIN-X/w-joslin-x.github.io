@@ -1,5 +1,5 @@
 import { render } from "astro:content";
-import { posts, slugOf, postHref } from "./roxy";
+import { postHref, posts, slugOf } from "./roxy";
 export type Section = { title: string; anchor: string; text: string };
 export async function readingIndex() {
 	return Promise.all(
