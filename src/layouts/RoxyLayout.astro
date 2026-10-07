@@ -96,4 +96,6 @@ const lastUpdate = all.length
 <script src="../scripts/roxy-background-motion.ts"></script>
 <script src="../scripts/roxy-effects.ts"></script>
 <script src="../scripts/roxy-interactions.ts"></script>
+{import.meta.env.PUBLIC_LIVE2D_ENABLED === "true" && <div id="live2d-host" data-no-effects style="--live2d-accent:var(--accent)" transition:persist="live2d-character"></div>}
+<script src="../scripts/roxy-live2d.ts"></script>
 </body></html>

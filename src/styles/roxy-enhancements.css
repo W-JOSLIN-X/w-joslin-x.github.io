@@ -232,3 +232,14 @@ html {
 		transition: none !important;
 	}
 }
+#live2d-host {
+	--live2d-accent: var(--accent);
+	--live2d-surface: var(--panel);
+	--live2d-text: var(--text);
+	--live2d-muted: color-mix(in srgb, var(--text) 70%, var(--panel));
+	--live2d-border: color-mix(in srgb, var(--accent) 26%, var(--panel));
+	--live2d-color-scheme: light;
+}
+:root[data-theme="dark"] #live2d-host {
+	--live2d-color-scheme: dark;
+}

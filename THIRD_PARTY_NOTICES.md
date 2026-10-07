@@ -6,17 +6,16 @@ This project includes portions adapted from the following open-source project.
 
 - Source: https://github.com/CuteLeaf/Firefly
 - License: MIT License
-- Usage: Markdown code groups, Wiki Link processing, PlantUML rendering and related interaction/styles were adapted and modified for Mizuki.
+- Usage: Wiki Link processing and PlantUML rendering were adapted and modified for Mizuki and retained in this project. Earlier versions also included adapted Markdown code-group and diagram interaction/style files.
 
-The affected files are:
+The retained adapted files are:
 
-- `src/components/features/markdown/CodeGroupManager.astro`
-- `src/components/features/markdown/DiagramManager.astro`
 - `src/plugins/remark-wiki-link.mjs`
 - `src/plugins/plantuml-encoder.mjs`
 - `src/plugins/remark-plantuml.mjs`
 - `src/plugins/rehype-plantuml.mjs`
-- The `rehype-code-group` section in `src/styles/expressive-code.css`
+
+Historical files `src/components/features/markdown/CodeGroupManager.astro`, `src/components/features/markdown/DiagramManager.astro`, and the `rehype-code-group` section in `src/styles/expressive-code.css` were removed during the site restructuring. They remain part of the attribution history, but are not current source paths. The copyright notices and license below are preserved.
 
 ### Firefly MIT License
 

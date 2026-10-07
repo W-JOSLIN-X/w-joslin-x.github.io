@@ -1,0 +1,21 @@
+{
+  "model": "roxy",
+  "models": [
+    {
+      "id": "roxy",
+      "name": "Roxy"
+    },
+    {
+      "id": "vivian",
+      "name": "薇薇安"
+    },
+    {
+      "id": "jane",
+      "name": "简"
+    },
+    {
+      "id": "nico",
+      "name": "尼古喵喵"
+    }
+  ]
+}

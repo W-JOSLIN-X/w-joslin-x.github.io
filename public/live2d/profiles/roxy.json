@@ -1,0 +1,8 @@
+{
+  "url": "../models/roxy/Roxy_V1.model3.json",
+  "actions": {},
+  "blinkParameters": [
+    "ParamEyeLOpen",
+    "ParamEyeROpen"
+  ]
+}
