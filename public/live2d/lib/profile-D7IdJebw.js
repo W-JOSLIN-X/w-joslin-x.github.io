@@ -55,7 +55,7 @@ function o(e) {
 			c.signal.throwIfAborted(), n++;
 			let u;
 			try {
-				await i(e.coreUrl), c.signal.throwIfAborted(), r = await import("./cubism-BGc0hpvr.js"), r.initializeFramework(), S(), u = new r.CubismActor(s, t, c.signal, l), await u.initialize(e.shaderUrl), c.signal.throwIfAborted(), d = u, d.draw(), l("ready", d.capabilities), y();
+				await i(e.coreUrl), c.signal.throwIfAborted(), r = await import("./cubism-D_kQpJjF.js"), r.initializeFramework(), S(), u = new r.CubismActor(s, t, c.signal, l), await u.initialize(e.shaderUrl), c.signal.throwIfAborted(), d = u, d.draw(), l("ready", d.capabilities), y();
 			} catch (e) {
 				throw u?.release(), !c.signal.aborted && o === v && l("error", e), e;
 			} finally {

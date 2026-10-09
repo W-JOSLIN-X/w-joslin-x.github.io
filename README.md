@@ -1,6 +1,6 @@
 # Roooooxy’s BLOG
 
-基于 Astro 与 Mizuki 的个人笔记网站，当前代码版本 v4.1.1。
+基于 Astro 与 Mizuki 的个人笔记网站，当前代码版本 v4.1.2。
 
 [访问网站](https://w-joslin-x.github.io/)
 

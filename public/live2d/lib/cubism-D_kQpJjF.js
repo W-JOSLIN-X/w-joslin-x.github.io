@@ -5523,15 +5523,61 @@ var Hi = class extends $ {
 (function(e) {
 	e.CubismExpressionUpdater = Hi;
 })(Ui ||= {});
+var Wi = new class {
+	budget;
+	request;
+	entries = /* @__PURE__ */ new Map();
+	size = 0;
+	constructor(e = 128 * 1024 * 1024, t = (...e) => fetch(...e)) {
+		this.budget = e, this.request = t;
+	}
+	async load(e, t) {
+		t.throwIfAborted();
+		let n = this.entries.get(e);
+		if (n) return this.entries.delete(e), this.entries.set(e, n), n.slice(0);
+		let r = await this.request(e, { signal: t });
+		if (!r.ok) throw Error(`Resource ${r.status}: ${e}`);
+		if (r.headers.get("content-type")?.includes("text/html")) throw Error(`Expected model resource, received an HTML page: ${e}`);
+		let i = await r.arrayBuffer();
+		if (t.throwIfAborted(), i.byteLength <= this.budget) {
+			let t = this.entries.get(e);
+			for (t && (this.size -= t.byteLength, this.entries.delete(e)); this.size + i.byteLength > this.budget;) {
+				let [e, t] = this.entries.entries().next().value;
+				this.entries.delete(e), this.size -= t.byteLength;
+			}
+			this.entries.set(e, i.slice(0)), this.size += i.byteLength;
+		}
+		return i;
+	}
+	async loadMany(e, t) {
+		t.throwIfAborted();
+		let n = new AbortController(), r = () => n.abort(t.reason);
+		t.addEventListener("abort", r, { once: !0 });
+		let i = [...new Set(e)], a = /* @__PURE__ */ new Map(), o = 0, s = Array.from({ length: Math.min(3, i.length) }, async () => {
+			for (; o < i.length;) {
+				n.signal.throwIfAborted();
+				let e = i[o++];
+				a.set(e, await this.load(e, n.signal));
+			}
+		});
+		try {
+			return await Promise.all(s), t.throwIfAborted(), a;
+		} catch (e) {
+			throw n.abort(e), await Promise.allSettled(s), e;
+		} finally {
+			t.removeEventListener("abort", r);
+		}
+	}
+}();
 //#endregion
 //#region src/sdk/cubism.ts
-function Wi() {
+function Gi() {
 	j.isInitialized() || (j.startUp(), j.initialize());
 }
-function Gi() {
+function Ki() {
 	X.getInstance().release(), Yr.getInstance().release();
 }
-var Ki = class extends yi {
+var qi = class extends yi {
 	gl;
 	config;
 	signal;
@@ -5555,28 +5601,35 @@ var Ki = class extends yi {
 	constructor(e, t, n, r) {
 		super(), this.gl = e, this.config = t, this.signal = n, this.emit = r;
 	}
-	async bytes(e) {
-		let t = new URL(e, new URL(this.config.url, document.baseURI)), n = await fetch(t, { signal: this.signal });
-		if (!n.ok) throw Error(`Resource ${n.status}: ${t.pathname}`);
-		if (n.headers.get("content-type")?.includes("text/html")) throw Error(`Expected model resource, received an HTML page: ${t.pathname}`);
-		let r = await n.arrayBuffer();
-		return this.signal.throwIfAborted(), r;
+	resourceUrl(e) {
+		return new URL(e, new URL(this.config.url, document.baseURI)).href;
+	}
+	bytes(e) {
+		return Wi.load(this.resourceUrl(e), this.signal);
 	}
 	async initialize(e) {
 		let t = await this.bytes("");
 		this.settings = new Ci(t, t.byteLength);
-		let n = await this.bytes(this.settings.getModelFileName());
-		if (this.loadModel(n, !0), !this.getModel()) throw Error("The SDK could not read this moc3 model.");
-		for (let [e, t] of [[this.settings.getPhysicsFileName(), (e) => this.loadPhysics(e, e.byteLength)], [this.settings.getPoseFileName(), (e) => this.loadPose(e, e.byteLength)]]) e && t(await this.bytes(e));
-		let r = /* @__PURE__ */ new Map();
-		this.settings.getLayoutMap(r), this._modelMatrix.setupFromLayout(r);
-		let i = Array.from({ length: this._model.getParameterCount() }, (e, t) => ({
+		let n = Array.from({ length: this.settings.getTextureCount() }, (e, t) => this.settings.getTextureFileName(t)), r = await Wi.loadMany([
+			this.settings.getModelFileName(),
+			this.settings.getPhysicsFileName(),
+			this.settings.getPoseFileName(),
+			...n
+		].filter(Boolean).map((e) => this.resourceUrl(e)), this.signal), i = (e) => {
+			let t = this.resourceUrl(e), i = r.get(t);
+			return n.includes(e) || r.delete(t), i;
+		}, a = i(this.settings.getModelFileName());
+		if (this.loadModel(a, !0), !this.getModel()) throw Error("The SDK could not read this moc3 model.");
+		for (let [e, t] of [[this.settings.getPhysicsFileName(), (e) => this.loadPhysics(e, e.byteLength)], [this.settings.getPoseFileName(), (e) => this.loadPose(e, e.byteLength)]]) e && t(i(e));
+		let o = /* @__PURE__ */ new Map();
+		this.settings.getLayoutMap(o), this._modelMatrix.setupFromLayout(o);
+		let s = Array.from({ length: this._model.getParameterCount() }, (e, t) => ({
 			id: this._model.getParameterId(t).getString(),
 			min: this._model.getParameterMinimumValue(t),
 			max: this._model.getParameterMaximumValue(t)
 		}));
 		this.capabilities = {
-			parameters: i,
+			parameters: s,
 			motions: Array.from({ length: this.settings.getMotionGroupCount() }, (e, t) => {
 				let n = this.settings.getMotionGroupName(t);
 				return {
@@ -5600,72 +5653,73 @@ var Ki = class extends yi {
 				this.validateMotion(n, `${e.id}.${t}`);
 			}
 		}
-		let a = this.config.framing;
-		if (a && (Object.values(a).some((e) => !Number.isFinite(e)) || (a.scale ?? 1) <= 0)) throw Error("Invalid framing configuration.");
+		let c = this.config.framing;
+		if (c && (Object.values(c).some((e) => !Number.isFinite(e)) || (c.scale ?? 1) <= 0)) throw Error("Invalid framing configuration.");
 		this.scheduler.addUpdatableList(new Hi(this._expressionManager));
-		let o = (e) => j.getIdManager().getId(e), s = (e) => i.some((t) => t.id === e), c = this.config.blinkParameters ?? Array.from({ length: this.settings.getEyeBlinkParameterCount() }, (e, t) => this.settings.getEyeBlinkParameterId(t).getString());
-		this.blinkIds = c.map((e) => {
-			if (!s(e)) throw Error(`Invalid blink parameter: ${e}`);
-			return o(e);
+		let l = (e) => j.getIdManager().getId(e), u = (e) => s.some((t) => t.id === e), d = this.config.blinkParameters ?? Array.from({ length: this.settings.getEyeBlinkParameterCount() }, (e, t) => this.settings.getEyeBlinkParameterId(t).getString());
+		this.blinkIds = d.map((e) => {
+			if (!u(e)) throw Error(`Invalid blink parameter: ${e}`);
+			return l(e);
 		}), this.blinkIds.length && (this._eyeBlink = be.create(this.settings), this._eyeBlink.setParameterIds(this.blinkIds), this.scheduler.addUpdatableList(new Mi(() => this.motionUpdated, this._eyeBlink)));
-		let l = (e, t) => s(e) ? e : t, u = i.find((e) => e.id === l("ParamBreath", "PARAM_BREATH"));
-		this._breath = _e.create(), this._breath.setParameters(u ? [new ve(o(u.id), (u.min + u.max) / 2, (u.max - u.min) / 2, 3.2345, 1)] : []), this.scheduler.addUpdatableList(new Pi(this._breath));
-		let d = this.config.follow ?? [
+		let f = (e, t) => u(e) ? e : t, p = s.find((e) => e.id === f("ParamBreath", "PARAM_BREATH"));
+		this._breath = _e.create(), this._breath.setParameters(p ? [new ve(l(p.id), (p.min + p.max) / 2, (p.max - p.min) / 2, 3.2345, 1)] : []), this.scheduler.addUpdatableList(new Pi(this._breath));
+		let m = this.config.follow ?? [
 			{
-				id: l("ParamAngleX", "PARAM_ANGLE_X"),
+				id: f("ParamAngleX", "PARAM_ANGLE_X"),
 				x: 1
 			},
 			{
-				id: l("ParamAngleY", "PARAM_ANGLE_Y"),
+				id: f("ParamAngleY", "PARAM_ANGLE_Y"),
 				y: 1
 			},
 			{
-				id: l("ParamAngleZ", "PARAM_ANGLE_Z"),
+				id: f("ParamAngleZ", "PARAM_ANGLE_Z"),
 				xy: -1
 			},
 			{
-				id: l("ParamBodyAngleX", "PARAM_BODY_ANGLE_X"),
+				id: f("ParamBodyAngleX", "PARAM_BODY_ANGLE_X"),
 				x: 1 / 3
 			},
 			{
-				id: l("ParamEyeBallX", "PARAM_EYE_BALL_X"),
+				id: f("ParamEyeBallX", "PARAM_EYE_BALL_X"),
 				x: 1
 			},
 			{
-				id: l("ParamEyeBallY", "PARAM_EYE_BALL_Y"),
+				id: f("ParamEyeBallY", "PARAM_EYE_BALL_Y"),
 				y: 1
 			}
-		].filter((e) => s(e.id));
-		this.look.setParameters(d.map(({ id: e, x: t = 0, y: n = 0, xy: r = 0 }) => {
-			let a = i.find((t) => t.id === e);
-			if (!a || ![
+		].filter((e) => u(e.id));
+		this.look.setParameters(m.map(({ id: e, x: t = 0, y: n = 0, xy: r = 0 }) => {
+			let i = s.find((t) => t.id === e);
+			if (!i || ![
 				t,
 				n,
 				r
 			].every(Number.isFinite)) throw Error(`Invalid follow mapping: ${e}`);
-			let s = (a.max - a.min) / 2;
-			return new Ei(o(e), t * s, n * s, r * s);
+			let a = (i.max - i.min) / 2;
+			return new Ei(l(e), t * a, n * a, r * a);
 		})), this.scheduler.addUpdatableList(new Ii(this.look, this._dragManager)), this._physics && this.scheduler.addUpdatableList(new Ri(this._physics)), this._pose && this.scheduler.addUpdatableList(new Bi(this._pose)), this.scheduler.sortUpdatableList();
-		let f = this.gl;
-		this.createRenderer(f.canvas.width, f.canvas.height), this.getRenderer().startUp(f), this.getRenderer().setIsPremultipliedAlpha(!0);
+		let h = this.gl;
+		this.createRenderer(h.canvas.width, h.canvas.height), this.getRenderer().startUp(h), this.getRenderer().setIsPremultipliedAlpha(!0);
 		for (let e = 0; e < this.settings.getTextureCount(); e++) {
-			let t = await this.bytes(this.settings.getTextureFileName(e)), n = await createImageBitmap(new Blob([t]), { premultiplyAlpha: "premultiply" });
+			let t = n[e], a = i(t), o = await createImageBitmap(new Blob([a]), { premultiplyAlpha: "premultiply" });
+			n.includes(t, e + 1) || r.delete(this.resourceUrl(t));
 			try {
 				this.signal.throwIfAborted();
-				let t = f.createTexture();
-				this.textures.push(t), f.bindTexture(f.TEXTURE_2D, t);
-				let r = f instanceof WebGL2RenderingContext || (n.width & n.width - 1) == 0 && (n.height & n.height - 1) == 0;
-				f.texParameteri(f.TEXTURE_2D, f.TEXTURE_MIN_FILTER, r ? f.LINEAR_MIPMAP_LINEAR : f.LINEAR), f.texParameteri(f.TEXTURE_2D, f.TEXTURE_MAG_FILTER, f.LINEAR), f.texParameteri(f.TEXTURE_2D, f.TEXTURE_WRAP_S, f.CLAMP_TO_EDGE), f.texParameteri(f.TEXTURE_2D, f.TEXTURE_WRAP_T, f.CLAMP_TO_EDGE), f.texImage2D(f.TEXTURE_2D, 0, f.RGBA, f.RGBA, f.UNSIGNED_BYTE, n), r && f.generateMipmap(f.TEXTURE_2D), this.getRenderer().bindTexture(e, t);
+				let t = h.createTexture();
+				this.textures.push(t), h.bindTexture(h.TEXTURE_2D, t);
+				let n = h instanceof WebGL2RenderingContext || (o.width & o.width - 1) == 0 && (o.height & o.height - 1) == 0;
+				h.texParameteri(h.TEXTURE_2D, h.TEXTURE_MIN_FILTER, n ? h.LINEAR_MIPMAP_LINEAR : h.LINEAR), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_MAG_FILTER, h.LINEAR), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_WRAP_S, h.CLAMP_TO_EDGE), h.texParameteri(h.TEXTURE_2D, h.TEXTURE_WRAP_T, h.CLAMP_TO_EDGE), h.texImage2D(h.TEXTURE_2D, 0, h.RGBA, h.RGBA, h.UNSIGNED_BYTE, o), n && h.generateMipmap(h.TEXTURE_2D), this.getRenderer().bindTexture(e, t);
 			} finally {
-				n.close();
+				o.close();
 			}
 		}
-		let p = X.getInstance().getShader(f);
-		if (p.setShaderPath(new URL(e, document.baseURI).href.replace(/\/?$/, "/")), !p._isShaderLoaded) {
-			p.generateShaders();
+		let g = X.getInstance().getShader(h);
+		if (g.setShaderPath(new URL(e, document.baseURI).href.replace(/\/?$/, "/")), !g._isShaderLoaded) {
+			g.generateShaders();
 			let e = Date.now() + 2e4;
-			for (; p._isShaderLoading && Date.now() < e;) await new Promise((e) => setTimeout(e, 16));
-			if (!p._isShaderLoaded || !p._shaderSets[0].shaderProgram) throw Error("SDK shader initialization failed.");
+			for (; g._isShaderLoading && Date.now() < e;) await new Promise((e) => setTimeout(e, 16));
+			if (!g._isShaderLoaded || !g._shaderSets[0].shaderProgram) throw Error("SDK shader initialization failed.");
 		}
 		this.signal.throwIfAborted(), this._model.saveParameters(), this._model.update();
 	}
@@ -5779,4 +5833,4 @@ var Ki = class extends yi {
 	}
 };
 //#endregion
-export { Ki as CubismActor, Wi as initializeFramework, Gi as releaseContexts };
+export { qi as CubismActor, Gi as initializeFramework, Ki as releaseContexts };
