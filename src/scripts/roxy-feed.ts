@@ -262,8 +262,12 @@ pageFeature((lifecycle) => {
 			{ capture: true },
 		);
 		const form = document.querySelector<HTMLFormElement>(".nav-search")!;
+		let timer: number | undefined;
+		let composing = false;
 		form.onsubmit = (e) => {
 			e.preventDefault();
+			if (composing) return;
+			lifecycle.clearTimeout(timer);
 			const params = new URLSearchParams(location.search);
 			input.value ? params.set("q", input.value) : params.delete("q");
 			scope.value === "full"
@@ -272,10 +276,20 @@ pageFeature((lifecycle) => {
 			restoreSearchFocus = document.activeElement === input;
 			void filterNavigation(params);
 		};
-		let timer: number | undefined;
-		lifecycle.on(input, "input", () => {
+		const scheduleSearch = () => {
 			lifecycle.clearTimeout(timer);
 			timer = lifecycle.timeout(() => form.requestSubmit(), 300);
+		};
+		lifecycle.on(input, "compositionstart", () => {
+			composing = true;
+			lifecycle.clearTimeout(timer);
+		});
+		lifecycle.on(input, "compositionend", () => {
+			composing = false;
+			scheduleSearch();
+		});
+		lifecycle.on(input, "input", (event: InputEvent) => {
+			if (!composing && !event.isComposing) scheduleSearch();
 		});
 		lifecycle.on(scope, "change", () => form.requestSubmit());
 	}

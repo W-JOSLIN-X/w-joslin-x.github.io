@@ -12,6 +12,10 @@ pageFeature((scope) => {
 	};
 	scope.on(window, "roxy:filters", clearSelection);
 	scope.on(input, "input", clearSelection);
+	// Keep IME candidate keys out of the site's search and Escape shortcuts.
+	scope.on(input, "keydown", (event: KeyboardEvent) => {
+		if (event.isComposing) event.stopPropagation();
+	});
 	scope.on(document, "keydown", (event: KeyboardEvent) => {
 		if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
 			event.preventDefault();

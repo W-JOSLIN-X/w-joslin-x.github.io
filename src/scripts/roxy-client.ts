@@ -241,12 +241,6 @@ pageFeature((scope) => {
 		$(".nav-search").classList.toggle("search-open");
 		$("#search-input").focus();
 	};
-	$(".nav-search button").addEventListener("click", (e) => {
-		if (document.activeElement !== $("#search-input")) {
-			e.preventDefault();
-			$("#search-input").focus();
-		}
-	});
 	const params = new URLSearchParams(location.search);
 	$<HTMLInputElement>("#search-input").value = params.get("q") || "";
 	$<HTMLSelectElement>("#search-scope").value =
