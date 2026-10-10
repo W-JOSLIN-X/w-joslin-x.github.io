@@ -1,17 +1,17 @@
 {
 	"appearance": {
-		"theme": "light",
-		"color": "#7C3AED",
+		"theme": "dark",
+		"color": "#9138EA",
 		"layout": "list",
-		"wide": false,
+		"wide": true,
 		"font": "original"
 	},
 	"background": {
-		"mode": "banner",
+		"mode": "overlay",
 		"soft": false,
-		"edge": "soft",
-		"atmosphere": "none",
-		"overlayTransparency": 14,
+		"edge": "layered",
+		"atmosphere": "sakura",
+		"overlayTransparency": 20,
 		"enabled": true,
 		"interval": 15,
 		"random": false,
@@ -20,12 +20,12 @@
 	},
 	"effects": {
 		"move": "stars",
-		"moveEnabled": false,
+		"moveEnabled": true,
 		"click": "ripple",
 		"clickEnabled": true,
 		"touchClickEnabled": false,
 		"sound": "mechanical",
-		"soundEnabled": false,
+		"soundEnabled": true,
 		"volume": 20
 	},
 	"other": {

@@ -52,7 +52,7 @@ pageFeature((scope) => {
 		);
 		const transparency = Number.isFinite(savedTransparency)
 			? Math.max(0, Math.min(100, savedTransparency))
-			: 14;
+			: Number(defaults.overlayTransparency);
 		root.dataset.overlayTransparency = String(transparency);
 		root.style.setProperty("--overlay-panel-opacity", `${100 - transparency}%`);
 		$<HTMLInputElement>("#overlay-transparency").value = String(transparency);

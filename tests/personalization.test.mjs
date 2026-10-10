@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { defaults } from "../src/utils/roxy-defaults.mjs";
 import { rehypeReadingIndex } from "../src/plugins/rehype-reading-index.mjs";
 import { matchesPost } from "../src/utils/roxy-filter.mjs";
 import {
@@ -47,7 +48,8 @@ test("touch defaults, disabled audio, and corrupt persisted effects are safe", (
 	});
 	assert.equal(prefs.volume, 100);
 	assert.equal(prefs.move, "stars");
-	assert.equal(prefs.soundEnabled, false);
+	assert.equal(prefs.soundEnabled, defaults.effects.soundEnabled);
+	assert.equal(normalizeEffects({ soundEnabled: false }).soundEnabled, false);
 });
 test("device click preferences survive export and old single switches migrate", () => {
 	assert.equal(

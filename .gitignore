@@ -29,3 +29,8 @@ scripts/measure-fonts.py
 scripts/font-benchmark.html
 scripts/migrate-v3.mjs
 scripts/audit-source.mjs
+
+# Local preview and verification artifacts
+.local/
+.playwright-cli/
+output/

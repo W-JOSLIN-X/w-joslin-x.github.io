@@ -1,3 +1,4 @@
+import { setChatCharacter, type ChatCharacter } from "./roxy-chat";
 import { pageFeature } from "./core/page-scope";
 
 type WidgetState = {
@@ -7,7 +8,7 @@ type WidgetState = {
 	hidden: boolean;
 	position: { x: number; y: number };
 };
-type Widget = {
+type Widget = ChatCharacter & {
 	ready: Promise<void>;
 	getState(): WidgetState;
 	pause(reason: string): void;
@@ -34,6 +35,7 @@ if (import.meta.env.PUBLIC_LIVE2D_ENABLED === "true") {
 			++revision;
 			if (widget) {
 				saved = widget.getState();
+				setChatCharacter(undefined);
 				widget.destroy();
 				widget = undefined;
 			}
@@ -53,7 +55,7 @@ if (import.meta.env.PUBLIC_LIVE2D_ENABLED === "true") {
 			if (current !== revision || !desktop.matches) return;
 			const mounted = await mountCharacter({
 				mount: host,
-				initialState: saved,
+				initialState: saved ?? { modelId: "vivian", scale: 0.7 },
 				base,
 			});
 			if (current !== revision || !desktop.matches) {
@@ -62,6 +64,7 @@ if (import.meta.env.PUBLIC_LIVE2D_ENABLED === "true") {
 				return;
 			}
 			widget = mounted as Widget;
+			setChatCharacter(widget);
 			sync();
 			await widget.ready;
 		} catch (error) {

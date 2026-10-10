@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { hexToHsl } from "../src/utils/roxy-slideshow.mjs";
 import {
 	baseColorAtHue,
 	baseColors,
@@ -37,8 +38,9 @@ test("palette is continuous across hue steps, anchor boundaries and red seam", (
 });
 
 test("new purple defaults share initialization and export while saved colors survive", () => {
-	assert.equal(defaults.appearance.color, "#7C3AED");
-	assert.equal(appearanceDataset().color.toLowerCase(), "#7c3aed");
+	assert.equal(defaults.appearance.color, "#9138EA");
+	assert.equal(hexToHsl(defaults.appearance.color, false).hue, 270);
+	assert.equal(appearanceDataset().color.toLowerCase(), "#9138ea");
 	assert.equal(appearanceDataset({ color: "#aabbcc" }).color, "#aabbcc");
 	const exported = exportDefaults("background", defaults.background);
 	assert.equal(exported.appearance.color, defaults.appearance.color);

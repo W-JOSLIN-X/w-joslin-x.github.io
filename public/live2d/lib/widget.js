@@ -38,31 +38,39 @@ function i(n) {
 		let e = Math.min(T, innerWidth / ee, innerHeight / te);
 		a.style.width = `${ee * e}px`, a.style.height = `${te * e}px`, h.value = String(Math.round(T * 100)), h.style.setProperty("--fill", `${(T - .5) * 100}%`), o.querySelector("output").textContent = `${h.value}%`;
 	}
+	function re() {
+		return k || w || M || m || x.size ? null : {
+			left: D.x + N.left * a.offsetWidth,
+			top: D.y + N.top * a.offsetHeight,
+			right: D.x + N.right * a.offsetWidth,
+			bottom: D.y + N.bottom * a.offsetHeight
+		};
+	}
 	function R() {
-		c.style.inset = `${N.top * 100}% ${(1 - N.right) * 100}% ${(1 - N.bottom) * 100}% ${N.left * 100}%`;
-		let e = D.x, t = D.y, n = e + (N.left + N.right) * a.offsetWidth / 2, r = t + N.top * a.offsetHeight, i = t + N.bottom * a.offsetHeight;
+		i.dispatchEvent(new CustomEvent("anchorchange", { detail: re() })), c.style.inset = `${N.top * 100}% ${(1 - N.right) * 100}% ${(1 - N.bottom) * 100}% ${N.left * 100}%`;
+		let e = D.x, t = D.y, n = e + (N.left + N.right) * a.offsetWidth / 2, r = t + N.top * a.offsetHeight, o = t + N.bottom * a.offsetHeight;
 		for (let e of [
 			l,
 			_,
 			v
 		]) {
 			if (e.hidden) continue;
-			let t = r - e.offsetHeight - 14, a = i + 14, o = t >= 8 || r > innerHeight - i ? "above" : "below", s = Math.max(8, Math.min(innerWidth - e.offsetWidth - 8, n - e.offsetWidth / 2));
-			e.style.left = `${s}px`, e.style.top = `${Math.max(8, Math.min(innerHeight - e.offsetHeight - 8, o === "above" ? t : a))}px`, e.dataset.side = o, e.style.setProperty("--tail", `${Math.max(20, Math.min(e.offsetWidth - 20, n - s))}px`);
+			let t = r - e.offsetHeight - 14, i = o + 14, a = t >= 8 || r > innerHeight - o ? "above" : "below", s = Math.max(8, Math.min(innerWidth - e.offsetWidth - 8, n - e.offsetWidth / 2));
+			e.style.left = `${s}px`, e.style.top = `${Math.max(8, Math.min(innerHeight - e.offsetHeight - 8, a === "above" ? t : i))}px`, e.dataset.side = a, e.style.setProperty("--tail", `${Math.max(20, Math.min(e.offsetWidth - 20, n - s))}px`);
 		}
 		g.dataset.edge = E, g.style.left = `${E === "left" ? 0 : E === "right" ? Math.max(0, innerWidth - g.offsetWidth) : Math.max(0, Math.min(innerWidth - g.offsetWidth, e + a.offsetWidth / 2))}px`, g.style.top = `${E === "top" ? 0 : E === "bottom" ? Math.max(0, innerHeight - g.offsetHeight) : Math.max(0, Math.min(innerHeight - g.offsetHeight, t + a.offsetHeight / 2))}px`;
 	}
-	function re(e) {
+	function ie(e) {
 		Z(), T = Math.max(.5, Math.min(1.5, e)), L(), Q();
 	}
 	function z() {
 		Z(), l.hidden = !1, G(), (d.length && !m ? u : h).focus({ preventScroll: !0 });
 	}
-	function ie() {
+	function ae() {
 		(M ? o.querySelector("#retry") : s).focus({ preventScroll: !0 });
 	}
 	function B(e = !0) {
-		l.hidden = !0, G(), e && ie();
+		l.hidden = !0, G(), e && ae();
 	}
 	function V(e) {
 		return j?.interactionRegions?.find(({ bounds: [t, n, r, i] }) => e.x >= t && e.x <= r && e.y >= n && e.y <= i);
@@ -92,7 +100,7 @@ function i(n) {
 		let t = !!o.activeElement;
 		M = !0, l.hidden = !0, Z(), s.style.pointerEvents = "none", _.querySelector("#error-detail").textContent = `角色加载失败：${e instanceof Error ? e.message : String(e)}`, O?.pause("failed"), G(), t && o.querySelector("#retry").focus({ preventScroll: !0 });
 	}
-	async function ae(e) {
+	async function oe(e) {
 		let r = ++A, a = p, c = !!o.activeElement?.closest("#error");
 		O?.destroy(), O = void 0;
 		let l = s.cloneNode(!1);
@@ -124,8 +132,8 @@ function i(n) {
 			throw !k && r === A && a === p && K(e), e;
 		}
 	}
-	async function oe(e) {
-		if (j = e, Z(), !O || M) return ae(e);
+	async function se(e) {
+		if (j = e, Z(), !O || M) return oe(e);
 		O.resume("failed"), G(), await O.loadModel(e), N = O.getVisibleBounds() ?? N, W(D.x, D.y);
 	}
 	async function q(t) {
@@ -137,7 +145,7 @@ function i(n) {
 		try {
 			let a = await e(n.url, y.signal);
 			if (k || r !== p) return;
-			await oe(a), !k && r === p && i.dispatchEvent(new CustomEvent("modelchange", { detail: { id: t } }));
+			await se(a), !k && r === p && i.dispatchEvent(new CustomEvent("modelchange", { detail: { id: t } }));
 		} catch (e) {
 			if (!k && r === p) throw K(e), e;
 		} finally {
@@ -149,19 +157,19 @@ function i(n) {
 		let t = ++p;
 		f = void 0, m = !0, G();
 		try {
-			await oe(e);
+			await se(e);
 		} finally {
 			!k && t === p && (m = !1, G());
 		}
 	}
 	u.addEventListener("change", () => void q(u.value).catch(() => {}), b);
-	function se() {
-		w = !1, G(), Q(), ie();
+	function ce() {
+		w = !1, G(), Q(), ae();
 	}
 	function Y() {
 		Z(), w = !0, G(), g.focus({ preventScroll: !0 });
 	}
-	function ce() {
+	function le() {
 		W(16, innerHeight - a.offsetHeight - 16);
 	}
 	function X(e) {
@@ -171,7 +179,7 @@ function i(n) {
 			y: 1 - (e.clientY - t.top) / t.height * 2
 		};
 	}
-	function le() {
+	function ue() {
 		if (!m) {
 			if (!j?.actions.tap) {
 				i.dispatchEvent(new CustomEvent("unavailable", { detail: {
@@ -185,8 +193,8 @@ function i(n) {
 	}
 	o.addEventListener("click", (e) => {
 		let t = e.target.id;
-		t === "dismiss" && Y(), t === "restore" && se(), t === "retry" && (f ? q(f) : J(j)).catch(() => {}), t === "choose" && z();
-	}, b), h.addEventListener("input", () => re(Number(h.value) / 100), b), document.addEventListener("pointerdown", (e) => {
+		t === "dismiss" && Y(), t === "restore" && ce(), t === "retry" && (f ? q(f) : J(j)).catch(() => {}), t === "choose" && z();
+	}, b), h.addEventListener("input", () => ie(Number(h.value) / 100), b), document.addEventListener("pointerdown", (e) => {
 		!l.hidden && !e.composedPath().includes(l) && B(!1);
 	}, b), o.addEventListener("focusin", (e) => {
 		e.target !== s || w || M || (N = O?.getVisibleBounds() ?? N, R());
@@ -266,7 +274,7 @@ function i(n) {
 			t.preventDefault(), Y();
 			return;
 		}
-		(t.key === "Enter" || t.key === " ") && (t.preventDefault(), le());
+		(t.key === "Enter" || t.key === " ") && (t.preventDefault(), ue());
 		let n = {
 			ArrowLeft: [-16, 0],
 			ArrowRight: [16, 0],
@@ -279,10 +287,10 @@ function i(n) {
 			W(D.x + e, D.y + r);
 		}
 	}, b), C.addEventListener("change", () => O?.setReducedMotion(C.matches), b);
-	function ue() {
+	function de() {
 		document.hidden ? (Z(), S.add("background"), O?.pause("background")) : (S.delete("background"), O?.resume("background"));
 	}
-	document.addEventListener("visibilitychange", ue, b), ue();
+	document.addEventListener("visibilitychange", de, b), de();
 	function Q() {
 		O?.resize(), s.hidden || (N = O?.getVisibleBounds() ?? N), W(D.x, D.y);
 	}
@@ -299,16 +307,29 @@ function i(n) {
 		Z(), L(), Q();
 	}, b), W(D.x, D.y), {
 		ready: f ? q(f) : J(n.model),
+		getAnchor: re,
+		addMenuAction(e, t, n) {
+			let r = document.createElement("button");
+			return r.dataset.menuAction = e, r.textContent = t, r.addEventListener("click", async () => {
+				B(!1), r.textContent = t;
+				try {
+					await n();
+				} catch {
+					if (k || !r.isConnected) return;
+					r.textContent = `${t}（加载失败，重试）`, z(), r.focus();
+				}
+			}, b), l.querySelector(".content").append(r), () => r.remove();
+		},
 		events: i,
 		element: a,
 		get character() {
 			return O;
 		},
-		show: se,
+		show: ce,
 		hide: Y,
 		setPosition: W,
-		resetPosition: ce,
-		setScale: re,
+		resetPosition: le,
+		setScale: ie,
 		getState: () => ({
 			modelId: f,
 			hidden: w,
@@ -325,7 +346,7 @@ function i(n) {
 		},
 		loadModel: J,
 		destroy() {
-			k || (Z(), k = !0, ++A, ++p, y.abort(), $.disconnect(), O?.destroy(), a.remove());
+			k || (Z(), k = !0, i.dispatchEvent(new CustomEvent("anchorchange", { detail: null })), ++A, ++p, y.abort(), $.disconnect(), O?.destroy(), a.remove());
 		}
 	};
 }

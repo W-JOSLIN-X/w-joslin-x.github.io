@@ -8,7 +8,7 @@ const child = spawn(
 	["node_modules/astro/bin/astro.mjs", mode, ...process.argv.slice(3)],
 	{
 		stdio: "inherit",
-		env: { ...process.env, PUBLIC_LIVE2D_ENABLED: "true" },
+		env: { ...process.env, PUBLIC_LIVE2D_ENABLED: "true", PUBLIC_CHAT_ENABLED: "true" },
 	},
 );
 child.on("exit", (code) => {
